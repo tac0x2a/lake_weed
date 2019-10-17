@@ -5,10 +5,22 @@ import datetime
 from dateutil.tz import tzutc
 
 import logging
-logger = logging.getLogger("dbms_clickhouse")
 
 
-def json2clickhouse_sub_list(key, list, types, values):
+def json2lcickhouse(src_json_str, logger=logging.getLogger("lakeweed__clickhouse")):
+    """Convert json string to python dict with data types for Clickhouse"""
+    body = json.loads(src_json_str)
+
+    types = {}
+    values = {}
+
+    for key, value in body.items():
+        __json2lcickhouse_sub(key, value, types, values)
+
+    return [types, values]
+
+
+def __json2clickhouse_sub_list(key, list, types, values):
     items = []
     items_ns = []
     types[key] = "Array(String)"
@@ -21,7 +33,7 @@ def json2clickhouse_sub_list(key, list, types, values):
         temp_type = {}
         temp_value = {}
 
-        json2lcickhouse_sub(idx, v, temp_type, temp_value)
+        __json2lcickhouse_sub(idx, v, temp_type, temp_value)
         items.append(temp_value[idx])
 
         types[key] = "Array({})".format(temp_type[idx])
@@ -40,14 +52,14 @@ def json2clickhouse_sub_list(key, list, types, values):
     return
 
 
-def json2lcickhouse_sub(key, body, types, values):
+def __json2lcickhouse_sub(key, body, types, values):
     if type(body) is dict:
         for child_key, child_value in body.items():
-            json2lcickhouse_sub(key + "__" + child_key, child_value, types, values)
+            __json2lcickhouse_sub(key + "__" + child_key, child_value, types, values)
         return
 
     if type(body) is list:
-        json2clickhouse_sub_list(key, body, types, values)
+        __json2clickhouse_sub_list(key, body, types, values)
         return
 
     # is atomic type.
@@ -82,16 +94,3 @@ def json2lcickhouse_sub(key, body, types, values):
     types[key] = "String"
 
     return
-
-
-def json2lcickhouse(src_json_str, logger=None):
-    """Convert json string to python dict with data types for Clickhouse"""
-    body = json.loads(src_json_str)
-
-    types = {}
-    values = {}
-
-    for key, value in body.items():
-        json2lcickhouse_sub(key, value, types, values)
-
-    return [types, values]
