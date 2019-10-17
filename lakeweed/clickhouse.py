@@ -6,7 +6,7 @@ import logging
 from . import time_parser
 
 
-def json2lcickhouse(src_json_str: str, logger=logging.getLogger("lakeweed__clickhouse")) -> tuple:
+def json2type_value(src_json_str: str, logger=logging.getLogger("lakeweed__clickhouse")) -> tuple:
     """
     Convert json string to python dict with data types for Clickhouse
 
