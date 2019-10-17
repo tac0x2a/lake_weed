@@ -28,7 +28,7 @@ def json2lcickhouse(src_json_str: str, logger=logging.getLogger("lakeweed__click
     for key, value in body.items():
         __json2lcickhouse_sub(key, value, types, values)
 
-    return [types, values]
+    return (types, values)
 
 
 def __json2clickhouse_sub_list(key, list, types, values):
