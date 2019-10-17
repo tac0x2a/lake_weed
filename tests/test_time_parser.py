@@ -1,6 +1,6 @@
 
 import pytest
-from br2dl import time_parser
+from lakeweed import time_parser
 from datetime import datetime, timezone, timedelta
 
 
