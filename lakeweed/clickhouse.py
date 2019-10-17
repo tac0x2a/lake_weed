@@ -1,10 +1,9 @@
-from . import time_parser
-
 import json
 import datetime
 from dateutil.tz import tzutc
-
 import logging
+
+from . import time_parser
 
 
 def json2lcickhouse(src_json_str, logger=logging.getLogger("lakeweed__clickhouse")):

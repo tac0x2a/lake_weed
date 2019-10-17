@@ -1,9 +1,8 @@
-#!/usr/bin/env python
 
 import pytest
-from lakeweed import clickhouse
-
 from datetime import datetime, timezone, timedelta
+
+from lakeweed import clickhouse
 
 
 def test_return_empty_set():
