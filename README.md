@@ -1,8 +1,7 @@
 # Lake Weed
 [![Build Status](https://travis-ci.org/tac0x2a/lake_weed.svg?branch=master)](https://travis-ci.org/tac0x2a/lake_weed)
 
-
-![Lake Weed](doc/img/lakeweed_s.png)
+![Lake Weed](./doc/img/lakeweed_s.png)
 
 Lake Weed is elastic converter JSON to RDB record.
 
