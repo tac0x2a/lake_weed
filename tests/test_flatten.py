@@ -1,6 +1,9 @@
 
 import pytest
+from datetime import datetime, timezone, timedelta
+
 from lakeweed import flatten
+from lakeweed.time_parser import DateTimeWithNS
 
 
 def test_flatten():
@@ -141,6 +144,46 @@ def test_specified_raise_if_not_valid_type():
     specified = "INVALID"  # double and decimal are available instead of float
     with pytest.raises(TypeError):
         flatten.__cast_specified(src, specified)
+
+
+def test_return_traverse_datetime_parse_datetime():
+    src = {
+        "hello": "2018/11/14",
+        "world": "2018/11/15 11:22:33.123456789",
+        "hoge": "2018/13/15 11:22:33"
+    }
+    expected = {
+        "hello": DateTimeWithNS(datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))), 0),
+        "world": DateTimeWithNS(datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))), 123456789),
+        "hoge": "2018/13/15 11:22:33"
+    }
+    res = flatten.traverse_datetime_parse(src)
+    assert expected == res
+
+
+def test_return_traverse_datetime_parse_datetime_array():
+    src = {
+        "hello": ["2018/11/14", "2018/11/15 11:22:33.123456789"]
+    }
+    expected = {
+        "hello": [
+            DateTimeWithNS(datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))), 0),
+            DateTimeWithNS(datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))), 123456789)
+        ]
+    }
+    res = flatten.traverse_datetime_parse(src)
+    assert expected == res
+
+
+def test_traverse_datetime_parse_return_original_string_array_if_contains_invalid_datetime():
+    src = {
+        "hello": ["2018/11/14", "2018/11/15 11:22:33.123456789", "2018/13/15 11:22:33"]
+    }
+    expected = {
+        "hello": ["2018/11/14", "2018/11/15 11:22:33.123456789", "2018/13/15 11:22:33"]
+    }
+    res = flatten.traverse_datetime_parse(src)
+    assert expected == res
 
 
 if __name__ == '__main__':
