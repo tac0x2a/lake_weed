@@ -71,3 +71,77 @@ def test_flatten_array():
 
 if __name__ == '__main__':
     pytest.main(['-v', __file__])
+
+
+def test_specified_int_int():
+    src = 42
+    specified = "int"
+    expected = 42
+    res = flatten.__cast_specified(src, specified)
+    assert expected == res
+    assert type(expected) == type(res)
+
+
+def test_specified_float_float():
+    src = -42.2
+    specified = "float"
+    expected = -42.2
+    res = flatten.__cast_specified(src, specified)
+    assert expected == res
+    assert type(expected) == type(res)
+
+
+def test_specified_int_float():
+    src = 42
+    specified = "float"
+    expected = 42.0
+    res = flatten.__cast_specified(src, specified)
+    assert expected == res
+    assert type(expected) == type(res)
+
+
+def test_specified_float_int():
+    src = 42.0
+    specified = "int"
+    expected = 42
+    res = flatten.__cast_specified(src, specified)
+    assert expected == res
+    assert type(expected) == type(res)
+
+
+def test_specified_int_string():
+    src = 42
+    specified = "string"
+    expected = "42"
+    res = flatten.__cast_specified(src, specified)
+    assert expected == res
+    assert type(expected) == type(res)
+
+
+def test_specified_float_string():
+    src = 42.195
+    specified = "string"
+    expected = "42.195"
+    res = flatten.__cast_specified(src, specified)
+    assert expected == res
+    assert type(expected) == type(res)
+
+
+def test_specified_string_float():
+    src = "42.195"
+    specified = "double"  # double and decimal are available instead of float
+    expected = 42.195
+    res = flatten.__cast_specified(src, specified)
+    assert expected == res
+    assert type(expected) == type(res)
+
+
+def test_specified_raise_if_not_valid_type():
+    src = "42.195"
+    specified = "INVALID"  # double and decimal are available instead of float
+    with pytest.raises(TypeError):
+        flatten.__cast_specified(src, specified)
+
+
+if __name__ == '__main__':
+    pytest.main(['-v', __file__])
