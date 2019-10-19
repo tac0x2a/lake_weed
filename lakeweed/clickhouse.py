@@ -4,9 +4,10 @@ from dateutil.tz import tzutc
 import logging
 
 from . import time_parser
+from . import flatten
 
 
-def json2type_value(src_json_str: str, logger=logging.getLogger("lakeweed__clickhouse")) -> tuple:
+def json2type_value(src_json_str: str, specified_types={}, logger=logging.getLogger("lakeweed__clickhouse")) -> tuple:
     """
     Convert json string to python dict with data types for Clickhouse
 
@@ -21,11 +22,12 @@ def json2type_value(src_json_str: str, logger=logging.getLogger("lakeweed__click
     """
 
     body = json.loads(src_json_str)
+    flatten_body = flatten.flatten(body, delimiter="__")
 
     types = {}
     values = {}
 
-    for key, value in body.items():
+    for key, value in flatten_body.items():
         __json2lcickhouse_sub(key, value, types, values)
 
     return (types, values)
@@ -64,11 +66,6 @@ def __json2clickhouse_sub_list(key, list, types, values):
 
 
 def __json2lcickhouse_sub(key, body, types, values):
-    if type(body) is dict:
-        for child_key, child_value in body.items():
-            __json2lcickhouse_sub(key + "__" + child_key, child_value, types, values)
-        return
-
     if type(body) is list:
         __json2clickhouse_sub_list(key, body, types, values)
         return
