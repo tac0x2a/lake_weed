@@ -153,8 +153,8 @@ def test_return_traverse_datetime_parse_datetime():
         "hoge": "2018/13/15 11:22:33"
     }
     expected = {
-        "hello": DateTimeWithNS(datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))), 0),
-        "world": DateTimeWithNS(datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))), 123456789),
+        "hello": DateTimeWithNS(datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))), 0, "2018/11/14"),
+        "world": DateTimeWithNS(datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))), 123456789, "2018/11/15 11:22:33.123456789"),
         "hoge": "2018/13/15 11:22:33"
     }
     res = flatten.traverse_datetime_parse(src)
@@ -167,8 +167,8 @@ def test_return_traverse_datetime_parse_datetime_array():
     }
     expected = {
         "hello": [
-            DateTimeWithNS(datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))), 0),
-            DateTimeWithNS(datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))), 123456789)
+            DateTimeWithNS(datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))), 0, "2018/11/14"),
+            DateTimeWithNS(datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))), 123456789, "2018/11/15 11:22:33.123456789")
         ]
     }
     res = flatten.traverse_datetime_parse(src)

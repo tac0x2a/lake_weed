@@ -15,9 +15,13 @@ RequiredTimePattern = re.compile(r".*\d\d?[/:-]\d\d?.*")
 class DateTimeWithNS:
     datetime: datetime.datetime
     nanosec: int
+    original_string: str
 
     def tupple(self) -> (datetime.datetime, int):
         return (self.datetime, self.nanosec)
+
+    def __str__(self) -> str:
+        return self.original_string
 
 
 def elastic_time_parse(src, logger=None) -> DateTimeWithNS:
@@ -35,4 +39,4 @@ def elastic_time_parse(src, logger=None) -> DateTimeWithNS:
     if(m != None):
         nano = int(m.group(1)[0:9].ljust(9, '0'))
 
-    return DateTimeWithNS(ret, nano)
+    return DateTimeWithNS(ret, nano, src)

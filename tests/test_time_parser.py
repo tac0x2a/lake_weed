@@ -7,7 +7,7 @@ from datetime import datetime, timezone, timedelta
 
 def assertConverted(src, expected_time, expected_ns):
     res = time_parser.elastic_time_parse(src)
-    assert DateTimeWithNS(expected_time, expected_ns) == res
+    assert DateTimeWithNS(expected_time, expected_ns, src) == res
 
 
 def assertNotValid(src):
@@ -102,6 +102,14 @@ def test_return_Time_value_if_string_is_Time_like_format_without_zero_padding():
     assertConverted("2018/11/14 9:6",
                     datetime(2018, 11, 14, 9, 6, 0, 0 * 1000, timezone(timedelta(hours=0))), 0
                     )
+
+
+def test_return_original_string():
+    src = "2018/11/14 9:6"
+    expected = src
+    res = time_parser.elastic_time_parse(src)
+    assert type(res) is DateTimeWithNS
+    assert expected == str(res)
 
 
 def test_return_original_string_is_simple_day_of_week():
