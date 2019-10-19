@@ -1,12 +1,13 @@
 
 import pytest
 from lakeweed import time_parser
+from lakeweed.time_parser import DateTimeWithNS
 from datetime import datetime, timezone, timedelta
 
 
 def assertConverted(src, expected_time, expected_ns):
     res = time_parser.elastic_time_parse(src)
-    assert [expected_time, expected_ns] == res
+    assert DateTimeWithNS(expected_time, expected_ns) == res
 
 
 def assertNotValid(src):

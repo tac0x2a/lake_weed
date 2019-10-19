@@ -88,7 +88,8 @@ def __json2lcickhouse_sub(key, body, types, values):
 
     # is string. try to parse as datetime.
     try:
-        [dt, ns] = time_parser.elastic_time_parse(value)
+        dtwns = time_parser.elastic_time_parse(value)
+        (dt, ns) = dtwns.tupple()
         values[key] = dt
         types[key] = "DateTime"
         # Clickhouse can NOT contain ms in DateTime column.
