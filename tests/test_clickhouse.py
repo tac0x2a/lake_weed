@@ -95,8 +95,8 @@ def test_return_String_array_values_if_DateTime_like_strings():
 
 def test_return_array_under_object():
     src = """
-  { "hello" : 42, "world" : { "value" : [128.4, -255.3] } }
-  """
+    { "hello" : 42, "world" : { "value" : [128.4, -255.3] } }
+    """
 
     expected = (
         {"hello": "Float64", "world__value": "Array(Float64)"},
@@ -108,8 +108,8 @@ def test_return_array_under_object():
 
 def test_return_string_Array_if_empyt_array():
     src = """
-  { "empty" : [], "nested" : [[]]}
-  """
+    { "empty" : [], "nested" : [[]]}
+    """
 
     expected = (
         {"empty": "Array(String)", "nested": "Array(String)"},
@@ -121,12 +121,12 @@ def test_return_string_Array_if_empyt_array():
 
 def test_return_String_nested_array():
     src = """
-  {
-      "hello" : [[1.1, 2.2], [3.3, 4.4]],
-      "world" : { "value" : [[1,2], [3,4]]},
-      "hoge"  : [{"v": 1}, {"v": 2}]
-  }
-  """
+    {
+        "hello" : [[1.1, 2.2], [3.3, 4.4]],
+        "world" : { "value" : [[1,2], [3,4]]},
+        "hoge"  : [{"v": 1}, {"v": 2}]
+    }
+    """
 
     expected = (
         {"hello": "Array(String)", "world__value": "Array(String)", "hoge": "Array(String)"},
@@ -151,7 +151,7 @@ def test_return_values_as_string_for_clickhouse_query():
       "date"  : "2019/09/15 14:50:03.042042043 +0900",
       "str"   : "Hello String"
     }
-  """
+    """
     expected = {
         "array": [1, 2, 3],
         "hello": ['[1.1, 2.2]', '[3.3, 4.4]'],

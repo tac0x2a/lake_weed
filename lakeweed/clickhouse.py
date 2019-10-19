@@ -21,9 +21,11 @@ def json2type_value(src_json_str: str, specified_types={}, logger=logging.getLog
         tuple -- return tuple (types, values). types={"column":"type on clickhouse", ...}, values={"column":"value on clickhouse", ...}
     """
 
+    # flatten
     body = json.loads(src_json_str)
     flatten_body = flatten.flatten(body, delimiter="__")
 
+    # specified type
     types = {}
     values = {}
 
@@ -96,7 +98,7 @@ def __json2lcickhouse_sub(key, body, types, values):
         values[key + "_ns"] = ns
         types[key + "_ns"] = "UInt32"
         return
-    except ValueError as e:
+    except ValueError:
         pass
 
     values[key] = str(value)
