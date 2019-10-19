@@ -1,5 +1,5 @@
 
-def flatten(src: dict, target=None, prefix="", delimiter="__"):
+def flatten(src: dict, target=None, prefix="", delimiter="."):
 
     if target == None:
         target = {}

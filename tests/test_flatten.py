@@ -24,8 +24,8 @@ def test_flatten_nested():
     }
     expected = {
         "hoge": 42,
-        "fuga__a": 43,
-        "fuga__b": 44,
+        "fuga.a": 43,
+        "fuga.b": 44,
     }
     res = flatten.flatten(src)
     assert expected == res
@@ -41,10 +41,10 @@ def test_flatten_nested_specified_delimiter():
     }
     expected = {
         "hoge": 42,
-        "fuga.a": 43,
-        "fuga.b": 44,
+        "fuga__a": 43,
+        "fuga__b": 44,
     }
-    res = flatten.flatten(src, delimiter=".")
+    res = flatten.flatten(src, delimiter="__")
     assert expected == res
 
 
@@ -60,9 +60,9 @@ def test_flatten_array():
     }
     expected = {
         "hoge": 42,
-        "fuga__a": 43,
-        "fuga__b": 44,
-        "fuga__c": [1, 2, 3],
+        "fuga.a": 43,
+        "fuga.b": 44,
+        "fuga.c": [1, 2, 3],
         "piyo": [{"a": 42, "b": 43}]
     }
     res = flatten.flatten(src)
