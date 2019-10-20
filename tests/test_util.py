@@ -146,7 +146,7 @@ def test_specified_raise_if_not_valid_type():
         util.__cast_specified(src, specified)
 
 
-def test_return_traverse_datetime_parse_datetime():
+def test_return_traverse_casting_datetime():
     src = {
         "hello": "2018/11/14",
         "world": "2018/11/15 11:22:33.123456789",
@@ -157,11 +157,29 @@ def test_return_traverse_datetime_parse_datetime():
         "world": DateTimeWithNS(datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))), 123456789, "2018/11/15 11:22:33.123456789"),
         "hoge": "2018/13/15 11:22:33"
     }
-    res = util.traverse_datetime_parse(src)
+    res = util.traverse_casting(src)
     assert expected == res
 
 
-def test_return_traverse_datetime_parse_datetime_array():
+def test_return_traverse_casting_specified_datetime_as_string():
+    src = {
+        "hello": "2018/11/14",
+        "world": "2018/11/15 11:22:33.123456789",
+        "hoge": "2018/13/15 11:22:33"
+    }
+    specified_types = {
+        "world": "String"
+    }
+    expected = {
+        "hello": DateTimeWithNS(datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))), 0, "2018/11/14"),
+        "world": "2018/11/15 11:22:33.123456789",
+        "hoge": "2018/13/15 11:22:33"
+    }
+    res = util.traverse_casting(src, specified_types=specified_types)
+    assert expected == res
+
+
+def test_return_traverse_casting_datetime_array():
     src = {
         "hello": ["2018/11/14", "2018/11/15 11:22:33.123456789"]
     }
@@ -171,18 +189,18 @@ def test_return_traverse_datetime_parse_datetime_array():
             DateTimeWithNS(datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))), 123456789, "2018/11/15 11:22:33.123456789")
         ]
     }
-    res = util.traverse_datetime_parse(src)
+    res = util.traverse_casting(src)
     assert expected == res
 
 
-def test_traverse_datetime_parse_return_original_string_array_if_contains_invalid_datetime():
+def test_traverse_casting_return_original_string_array_if_contains_invalid_datetime():
     src = {
         "hello": ["2018/11/14", "2018/11/15 11:22:33.123456789", "2018/13/15 11:22:33"]
     }
     expected = {
         "hello": ["2018/11/14", "2018/11/15 11:22:33.123456789", "2018/13/15 11:22:33"]
     }
-    res = util.traverse_datetime_parse(src)
+    res = util.traverse_casting(src)
     assert expected == res
 
 

@@ -18,19 +18,40 @@ def flatten(src: dict, target=None, prefix="", delimiter="."):
     return target
 
 
-def traverse_datetime_parse(flatten_dict: dict):
+def traverse_casting(flatten_dict: dict, specified_types=None) -> dict:
+    if specified_types == None:
+        specified_types = {}
+
     new_items = {}
     for k, v in flatten_dict.items():
-        if type(v) is list:
-            v = __traverse_datetime_parse_list(v)
-        else:
+
+        # Convert specified type
+        if k in specified_types.keys():
+            specified_type = specified_types[k]
+
             try:
-                v = time_parser.elastic_time_parse(v)
-            except ValueError:
-                pass
-        new_items[k] = v
+                new_items[k] = __cast_specified(v, specified_type)
+            except TypeError:
+                new_items[k] = v
+                pass  # TODO logging or abort
+
+        # Convert elastic type
+        else:
+            new_items[k] = __datetime_parse(v)
 
     return new_items
+
+
+def __datetime_parse(value):
+    # list
+    if type(value) is list:
+        return __traverse_datetime_parse_list(value)
+
+    # scala
+    try:
+        return time_parser.elastic_time_parse(value)
+    except ValueError:
+        return value
 
 
 def __traverse_datetime_parse_list(list: list):
