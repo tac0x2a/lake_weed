@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="lakeweed",
-    version="0.0.1",
+    version="0.1.0",
     author="TAC",
     author_email="tac@tac42.net",
     description=("Elastic converter JSON to RDB record"),
