@@ -184,6 +184,8 @@ def test_return_values_with_specivied_types():
         {"datetime": "String"},
         {"datetime": "2019/09/15 14:50:03.042042043 +0900"}
     )
+    res = clickhouse.json2type_value(src, specified_types=specified_types)
+    assert expected == res
 
 
 def test_return_values_with_specivied_nested_types():
