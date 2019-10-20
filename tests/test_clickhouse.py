@@ -170,20 +170,38 @@ def test_return_values_as_string_for_clickhouse_query():
     assert expected == res[1]
 
 
-# def test_return_values_with_specivied_types():
-#     src = """
-#     {
-#       "datetime"  : "2019/09/15 14:50:03.042042043 +0900"
-#     }
-#     """
-#     specified_types = {
-#         "datetime": "String"
-#     }
+def test_return_values_with_specivied_types():
+    src = """
+    {
+      "datetime"  : "2019/09/15 14:50:03.042042043 +0900"
+    }
+    """
+    specified_types = {
+        "datetime": "String"
+    }
 
-#     expected = (
-#         {"datetime": "String"},
-#         {"datetime": "2019/09/15 14:50:03.042042043 +0900"}
-#     )
+    expected = (
+        {"datetime": "String"},
+        {"datetime": "2019/09/15 14:50:03.042042043 +0900"}
+    )
 
-#     res = clickhouse.json2type_value(src, specified_types=specified_types)
-#     assert expected == res
+
+def test_return_values_with_specivied_nested_types():
+    src = """
+    {
+      "datetime"  : {
+         "nested" : "2019/09/15 14:50:03.042042043 +0900"
+      }
+    }
+    """
+    specified_types = {
+        "datetime__nested": "String"
+    }
+
+    expected = (
+        {"datetime__nested": "String"},
+        {"datetime__nested": "2019/09/15 14:50:03.042042043 +0900"}
+    )
+
+    res = clickhouse.json2type_value(src, specified_types=specified_types)
+    assert expected == res

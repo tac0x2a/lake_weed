@@ -48,16 +48,19 @@ def __datetime_parse(value):
         return __traverse_datetime_parse_list(value)
 
     # scala
-    try:
-        return time_parser.elastic_time_parse(value)
-    except ValueError:
-        return value
+    if type(value) is str:
+        try:
+            return time_parser.elastic_time_parse(value)
+        except ValueError:
+            return value
+
+    return value
 
 
 def __traverse_datetime_parse_list(list: list):
     try:
         return [time_parser.elastic_time_parse(v) for v in list]
-    except ValueError:
+    except (ValueError, TypeError):
         return list
 
 
