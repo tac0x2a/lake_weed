@@ -4,9 +4,11 @@ from dateutil.tz import tzutc
 import logging
 
 from . import time_parser
+from .time_parser import DateTimeWithNS
+from . import util
 
 
-def json2type_value(src_json_str: str, logger=logging.getLogger("lakeweed__clickhouse")) -> tuple:
+def json2type_value(src_json_str: str, specified_types=None, logger=logging.getLogger("lakeweed__clickhouse")) -> tuple:
     """
     Convert json string to python dict with data types for Clickhouse
 
@@ -20,12 +22,21 @@ def json2type_value(src_json_str: str, logger=logging.getLogger("lakeweed__click
         tuple -- return tuple (types, values). types={"column":"type on clickhouse", ...}, values={"column":"value on clickhouse", ...}
     """
 
-    body = json.loads(src_json_str)
+    if specified_types == None:
+        specified_types = {}
 
+    # flatten
+    body = json.loads(src_json_str)
+    flatten_body = util.flatten(body, delimiter="__")
+
+    # convert types
+    casted_body = util.traverse_casting(flatten_body, specified_types)
+
+    # specified type
     types = {}
     values = {}
 
-    for key, value in body.items():
+    for key, value in casted_body.items():
         __json2lcickhouse_sub(key, value, types, values)
 
     return (types, values)
@@ -64,11 +75,6 @@ def __json2clickhouse_sub_list(key, list, types, values):
 
 
 def __json2lcickhouse_sub(key, body, types, values):
-    if type(body) is dict:
-        for child_key, child_value in body.items():
-            __json2lcickhouse_sub(key + "__" + child_key, child_value, types, values)
-        return
-
     if type(body) is list:
         __json2clickhouse_sub_list(key, body, types, values)
         return
@@ -88,18 +94,14 @@ def __json2lcickhouse_sub(key, body, types, values):
         values[key] = 1 if value else 0
         types[key] = "UInt8"
         return
-
-    # is string. try to parse as datetime.
-    try:
-        [dt, ns] = time_parser.elastic_time_parse(value)
+    if type(value) is DateTimeWithNS:
+        (dt, ns) = value.tupple()
         values[key] = dt
         types[key] = "DateTime"
         # Clickhouse can NOT contain ms in DateTime column.
         values[key + "_ns"] = ns
         types[key + "_ns"] = "UInt32"
         return
-    except ValueError as e:
-        pass
 
     values[key] = str(value)
     types[key] = "String"
