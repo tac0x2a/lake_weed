@@ -114,7 +114,6 @@ python setup.py sdist bdist_wheel
 ### Local testing
 ```sh
 python setup.py develop
-
 ```
 
 ### Deploy to PyPI
@@ -127,3 +126,10 @@ twine upload --repository testpypi dist/*
 twine upload --repository pypi dist/*
 # open https://pypi.org/project/lakeweed/
 ```
+
+# Contributing
+1. Fork it ( https://github.com/tac0x2a/lake_weed/fork )
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
