@@ -4,7 +4,7 @@ from dateutil.tz import tzutc
 import logging
 
 from . import time_parser
-from . import flatten
+from . import util
 
 
 def json2type_value(src_json_str: str, specified_types={}, logger=logging.getLogger("lakeweed__clickhouse")) -> tuple:
@@ -23,7 +23,7 @@ def json2type_value(src_json_str: str, specified_types={}, logger=logging.getLog
 
     # flatten
     body = json.loads(src_json_str)
-    flatten_body = flatten.flatten(body, delimiter="__")
+    flatten_body = util.flatten(body, delimiter="__")
 
     # specified type
     types = {}

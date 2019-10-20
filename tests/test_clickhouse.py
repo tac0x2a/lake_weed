@@ -168,3 +168,22 @@ def test_return_values_as_string_for_clickhouse_query():
     }
     res = clickhouse.json2type_value(src)
     assert expected == res[1]
+
+
+# def test_return_values_with_specivied_types():
+#     src = """
+#     {
+#       "datetime"  : "2019/09/15 14:50:03.042042043 +0900"
+#     }
+#     """
+#     specified_types = {
+#         "datetime": "String"
+#     }
+
+#     expected = (
+#         {"datetime": "String"},
+#         {"datetime": "2019/09/15 14:50:03.042042043 +0900"}
+#     )
+
+#     res = clickhouse.json2type_value(src, specified_types=specified_types)
+#     assert expected == res
