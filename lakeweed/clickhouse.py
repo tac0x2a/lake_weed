@@ -22,7 +22,7 @@ def json2type_value(src_json_str: str, specified_types=None, logger=logging.getL
         tuple -- return tuple (types, values). types={"column":"type on clickhouse", ...}, values={"column":"value on clickhouse", ...}
     """
 
-    if specified_types == None:
+    if specified_types is None:
         specified_types = {}
 
     # flatten
@@ -101,6 +101,10 @@ def __json2lcickhouse_sub(key, body, types, values):
         # Clickhouse can NOT contain ms in DateTime column.
         values[key + "_ns"] = ns
         types[key + "_ns"] = "UInt32"
+        return
+    if value is None:
+        values[key] = None
+        types[key] = "String" # Todo: Need to find the table is already created.
         return
 
     values[key] = str(value)
