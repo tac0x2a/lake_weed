@@ -207,3 +207,16 @@ def test_return_values_with_specivied_nested_types():
 
     res = clickhouse.json2type_value(src, specified_types=specified_types)
     assert expected == res
+
+
+def test_return_String_type_if_provide_None_type():
+    src = """
+    { "value" : null }
+    """
+
+    expected = (
+        {"value": "String"},
+        {"value": None}
+    )
+    res = clickhouse.json2type_value(src)
+    assert expected == res

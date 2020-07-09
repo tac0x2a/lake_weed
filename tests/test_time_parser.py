@@ -104,6 +104,10 @@ def test_return_Time_value_if_string_is_Time_like_format_without_zero_padding():
                     )
 
 
+def test_return_None_if_value_is_None():
+    assertNotValid(None)
+
+
 def test_return_original_string():
     src = "2018/11/14 9:6"
     expected = src
