@@ -26,17 +26,19 @@ class DateTimeWithNS:
 
 def elastic_time_parse(src, logger=None) -> DateTimeWithNS:
     """Parse src string as datetime and nanosec part. Raise exception if src format is NOT valid. """
-    nano = 0
+    if src is None:
+        raise ValueError
 
     if not re.match(RequiredTimePattern, src):
         raise ValueError
 
+    nano = 0
     ret = parse(src)
-    if ret.tzinfo == None:
+    if ret.tzinfo is None:
         ret = ret.replace(tzinfo=tzutc())
 
     m = NanosecPattern.match(src)
-    if(m != None):
+    if(m is not None):
         nano = int(m.group(1)[0:9].ljust(9, '0'))
 
     return DateTimeWithNS(ret, nano, src)
