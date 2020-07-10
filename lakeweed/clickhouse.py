@@ -1,9 +1,6 @@
 import json
-import datetime
-from dateutil.tz import tzutc
 import logging
 
-from . import time_parser
 from .time_parser import DateTimeWithNS
 from . import util
 
@@ -104,7 +101,8 @@ def __json2lcickhouse_sub(key, body, types, values):
         return
     if value is None:
         values[key] = None
-        types[key] = "String" # Todo: Need to find the table is already created.
+        # Todo: Need to find the table is already created.
+        types[key] = "String"
         return
 
     values[key] = str(value)

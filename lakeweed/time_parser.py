@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-import time
 
 import datetime
 from dateutil.parser import parse
