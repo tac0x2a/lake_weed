@@ -2,7 +2,7 @@ import json
 import logging
 
 from .time_parser import DateTimeWithNS
-from . import format_inferencer as fi
+from .inferencial_parser import inferencial_parse
 
 
 def json2type_value(src_json_str: str, specified_types=None, logger=logging.getLogger("lakeweed__clickhouse")) -> tuple:
@@ -19,7 +19,7 @@ def json2type_value(src_json_str: str, specified_types=None, logger=logging.getL
         tuple -- return tuple (types, values). types={"column":"type on clickhouse", ...}, values={"column":"value on clickhouse", ...}
     """
 
-    (format, keys, values_list) = fi.inference_format(src_json_str, specified_types, "__", logger)
+    (format, keys, values_list) = inferencial_parse(src_json_str, specified_types, "__", logger)
 
     # specified type
     types = {}

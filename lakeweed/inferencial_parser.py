@@ -13,7 +13,7 @@ JsonLines: str = "json_lines"  # Json lines (list of json object)
 Csv: str = "csv"               # CSV with header
 
 
-def inference_format(src: str, specified_types=None, json_delimiter="__", logger=logging.getLogger("lakeweed__format_inferencer")) -> (str, list, list):
+def inferencial_parse(src: str, specified_types=None, json_delimiter="__", logger=logging.getLogger("lakeweed__format_inferencer")) -> (str, list, list):
     """
     Apply specified_types and try to parse string as date time.
 

@@ -1,5 +1,5 @@
 
-from lakeweed import format_inferencer as fi
+from lakeweed import inferencial_parser as ip
 
 
 # -------------- Invalid -------------- #
@@ -8,8 +8,8 @@ def test_inference_format_reteurn_Invalid_src_is_not_formated():
     hello!
     """
 
-    (format, keys, values_list) = fi.inference_format(src)
-    assert fi.Invalid == format
+    (format, keys, values_list) = ip.inferencial_parse(src)
+    assert ip.Invalid == format
     assert keys == []
     assert values_list == []
 
@@ -20,8 +20,8 @@ def test_inference_format_reteurn_json_src_is_sipmle_json():
     {}
     """
 
-    (format, keys, values_list) = fi.inference_format(src)
-    assert fi.Json == format
+    (format, keys, values_list) = ip.inferencial_parse(src)
+    assert ip.Json == format
     assert [] == keys
     assert [[]] == values_list
 
@@ -31,8 +31,8 @@ def test_inference_format_reteurn_json_obj_src_is_sipmle_json():
     { "hello" : 42, "world" : 128.4, "bool" : true, "str" : "Hello,World" }
     """
 
-    (format, keys, values_list) = fi.inference_format(src)
-    assert fi.Json == format
+    (format, keys, values_list) = ip.inferencial_parse(src)
+    assert ip.Json == format
     assert ['hello', 'world', 'bool', 'str'] == keys
     assert [[42, 128.4, True, 'Hello,World']] == values_list
 
@@ -44,8 +44,8 @@ def test_inference_format_reteurn_list_of_json_src_is_multi_line_json_objects():
     {}
     """
 
-    (format, keys, values_list) = fi.inference_format(src)
-    assert fi.JsonLines == format
+    (format, keys, values_list) = ip.inferencial_parse(src)
+    assert ip.JsonLines == format
     assert [] == keys
     assert [[], []] == values_list
 
@@ -62,8 +62,8 @@ def test_inference_format_reteurn_list_of_json_obj_src_is_multi_line_json_object
         [42, 128.4, None, 'Hello,World', True]
     ]
 
-    (format, keys, values_list) = fi.inference_format(src)
-    assert fi.JsonLines == format
+    (format, keys, values_list) = ip.inferencial_parse(src)
+    assert ip.JsonLines == format
     assert expected_keys == keys
     assert expected_values == values_list
 
@@ -76,7 +76,7 @@ def test_inference_format_reteurn_csv_src_is_basic_csv():
     42,hoge,"hello,world",,
     """
 
-    (format, keys, values_list) = fi.inference_format(src)
-    assert fi.Csv == format
+    (format, keys, values_list) = ip.inferencial_parse(src)
+    assert ip.Csv == format
     assert ["a", "b", "c", "d", "e"] == keys
     assert [[10, None, "hello,world", None, None], [42, 'hoge', 'hello,world', None, None]] == values_list
