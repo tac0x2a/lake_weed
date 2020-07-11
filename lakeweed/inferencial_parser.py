@@ -15,10 +15,16 @@ Csv: str = "csv"               # CSV with header
 
 def inferencial_parse(src: str, specified_types=None, json_delimiter="__", logger=logging.getLogger("lakeweed__format_inferencer")) -> (str, list, list):
     """
-    Apply specified_types and try to parse string as date time.
+    This method try to parse src string as Json, JsonLines, or Csv  with inference.
 
     Returns:
-        dict -- return converted flatten_dict. Keys will not be modified.}
+        tuple -- return (Foramt, Keys, Record List).
+            Format -- Json, JsonLines, or Csv. If string is not match with any format, will return Invalid.
+            Keys -- A list of key name strings.
+                    In Json, all nested kays(properties) are fltten.
+                    In JsonLines, if JSONs has different keys each other, this function will return union set of keys.
+            Record list -- List of values list. Inside list correspoind to a record. For example, src string contains 2 records, length of Record List will be 2.
+                           Order of inside list values correspond to a Keys order. In JsonLines, if there is not key in some record, will be set None value.
     """
 
     if specified_types is None:
