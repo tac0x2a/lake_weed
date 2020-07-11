@@ -1,6 +1,7 @@
 
 from lakeweed import format_inferencer as fi
 
+
 # -------------- Invalid -------------- #
 def test_inference_format_reteurn_Invalid_src_is_not_formated():
     src = """
@@ -48,17 +49,6 @@ def test_inference_format_reteurn_list_of_json_src_is_multi_line_json_objects():
     assert [] == keys
     assert [[], []] == values_list
 
-
-def test_inference_format_reteurn_list_of_json_obj_src_is_multi_line_json_objects():
-    src = """
-    { "hello" : 42, "world" : 128.4, "bool" : true, "str" : "Hello,World" }
-    { "hello" : 42, "world" : 128.4, "bool" : true, "str" : "Hello,World" }
-    """
-
-    (format, keys, values_list) = fi.inference_format(src)
-    assert fi.JsonLines == format
-    assert ['hello', 'world', 'bool', 'str'] == keys
-    assert [[42, 128.4, True, 'Hello,World'], [42, 128.4, True, 'Hello,World']] == values_list
 
 def test_inference_format_reteurn_list_of_json_obj_src_is_multi_line_json_objects():
     src = """
