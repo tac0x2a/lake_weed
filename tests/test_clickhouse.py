@@ -1,5 +1,3 @@
-
-import pytest
 from datetime import datetime, timezone, timedelta
 
 from lakeweed import clickhouse
