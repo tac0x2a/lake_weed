@@ -281,3 +281,39 @@ def test_return_csv_if_complex_expressions():
     )
     res = clickhouse.data_string2type_value(src)
     assert expected == res
+
+
+# --------------------------------
+# Multi line Cases
+
+def test_return_multi_empty_set():
+    src = """
+    {}
+    {}
+    {}
+    """
+    expected = ((), (), [(),(),()])
+    res = clickhouse.data_string2type_value(src)
+    assert res == expected
+
+
+def test_return_multi_basic_type_and_values():
+    src = """
+    { "hello" : 42, "world" : 128.4, "bool" : true,  "str" : "Hello,World1" }
+    { "hello" : 43, "world" : 128.5, "bool" : false, "str" : "Hello,World2" }
+    { "hello" : 44, "world" : 128.6, "bool" : true,  "str" : "Hello,World3" }
+    """
+
+    expected = (
+        ("hello", "world", "bool", "str"),
+        ("Float64", "Float64", "UInt8", "String"),
+        [
+            (42, 128.4, 1, "Hello,World1"),
+            (43, 128.5, 0, "Hello,World2"),
+            (44, 128.6, 1, "Hello,World3")
+        ]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res
+
+

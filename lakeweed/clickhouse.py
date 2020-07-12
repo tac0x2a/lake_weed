@@ -1,5 +1,6 @@
 import json
 import logging
+from collections import OrderedDict
 
 from .time_parser import DateTimeWithNS
 from .inferencial_parser import inferencial_parse
@@ -30,7 +31,7 @@ def data_string2type_value(src_json_str: str, specified_types=None, logger=loggi
 
     (format, keys, values_list) = inferencial_parse(src_json_str, specified_types, "__", logger)
 
-    columns_res = []
+    columns_res = OrderedDict()
     types_res = []
     values_list_res = []
 
@@ -46,11 +47,11 @@ def data_string2type_value(src_json_str: str, specified_types=None, logger=loggi
 
         values_list_res.append(tuple(values_tmp))
 
-    return (tuple(columns_res), tuple(types_res), values_list_res)
+    return (tuple(columns_res.keys()), tuple(types_res), values_list_res)
 
 
-def __datastring2clickhouse_sub_list(key, list, columns: list, types: list, values: list):
-    columns.append(key)
+def __datastring2clickhouse_sub_list(key, list, columns: OrderedDict, types: list, values: list):
+    columns[key] = True
     array_type = "Array(String)"
     items = []
 
@@ -66,11 +67,11 @@ def __datastring2clickhouse_sub_list(key, list, columns: list, types: list, valu
             continue
 
         idx = str(idx_i)
-        temp_column = []
+        dummy_column = OrderedDict()
         temp_type = []
         temp_value = []
 
-        __datastring2lcickhouse_sub(idx, v, temp_column, temp_type, temp_value)
+        __datastring2lcickhouse_sub(idx, v, dummy_column, temp_type, temp_value)
         items.append(temp_value[0])
         array_type = "Array({})".format(temp_type[0])
 
@@ -85,20 +86,20 @@ def __datastring2clickhouse_sub_list(key, list, columns: list, types: list, valu
     # for DateTime Array
     if len(items_ns) > 0:
         types.append(array_type_ns)
-        columns.append(key + "_ns")
+        columns[key + "_ns"] = True
         values.append(items_ns)
 
     return
 
 
-def __datastring2lcickhouse_sub(key, body, columns: list, types: list, values: list):
+def __datastring2lcickhouse_sub(key, body, columns: OrderedDict, types: list, values: list):
     if type(body) is list:
         __datastring2clickhouse_sub_list(key, body, columns, types, values)
         return
-
+    print(columns)
     # is atomic type.
     value = body
-    columns.append(key)
+    columns[key] = True
 
     if type(value) is float:
         values.append(float(value))
@@ -117,7 +118,7 @@ def __datastring2lcickhouse_sub(key, body, columns: list, types: list, values: l
         values.append(dt)
         types.append("DateTime")
         # Clickhouse can NOT contain ms in DateTime column.
-        columns.append(key + "_ns")
+        columns[key + "_ns"] = True
         values.append(ns)
         types.append("UInt32")
         return
