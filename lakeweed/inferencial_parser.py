@@ -126,7 +126,6 @@ def __is_csv(raw_src, specified_types, logger, keys: list, values_list: list) ->
             for row in df.values:
                 values = [None if type(v) is float and math.isnan(v) else v for v in row.tolist()]
                 flatten_body = {k: v for k, v in zip(keys, values)}
-                print(flatten_body)
                 casted_body = util.traverse_casting(flatten_body, specified_types)
                 values_list.append(list(casted_body.values()))
 

@@ -87,6 +87,56 @@ print(values)
 
 ```
 
+## Example(CSV test to ClickHouse)
+```py
+
+src_csv = """
+f,b,d
+42,true,2019/09/15 14:50:03.101 +0900
+"42","true",2019/12/15 14:50:03.101 +0900
+"""
+
+(columns, types, values) = clickhouse.data_string2type_value(src_csv)
+
+print(columns)
+# ('f', 'b', 'd', 'd_ns')
+
+print(types)
+# ('Float64', 'UInt8', 'DateTime', 'UInt32')
+
+print(values)
+# [
+#   (42, 1, datetime.datetime(2019, 9, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)), 101000000),
+#   (42, 1, datetime.datetime(2019, 12, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)), 101000000)
+# ]
+```
+
+## Example(Json lines test to ClickHouse)
+Lake Weed converts each row of JSON in the same way as a single line of json.
+Automatically selects the type so that all data can be stored. For example, if you have a mix of Numbers and Strings, select a String type that can store both.
+
+```py
+
+src_json_lines = """
+{"f": 42,   "b": true,   "d": "2019/09/15 14:50:03.101 +0900"}
+{"f": "42", "b": "true", "d": "2019/12/15 14:50:03.101 +0900"}
+"""
+
+(columns, types, values) = clickhouse.data_string2type_value(src_json_lines)
+
+
+print(columns)
+# ('f', 'b', 'd', 'd_ns')
+
+print(types)
+# ('String', 'String', 'DateTime', 'UInt32')
+
+print(values)
+# [
+#   ('42', '1',    datetime.datetime(2019,  9, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)), 101000000),
+#   ('42', 'true', datetime.datetime(2019, 12, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)), 101000000)
+# ]
+```
 
 # Release PyPI
 
