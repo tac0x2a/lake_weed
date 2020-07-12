@@ -42,7 +42,7 @@ def inferencial_parse(src: str, specified_types=None, json_delimiter="__", logge
         return JsonLines, keys, values_list
 
     # CSV with header
-    if __is_csv(src, logger, keys, values_list):
+    if __is_csv(src, specified_types, logger, keys, values_list):
         return Csv, keys, values_list
 
     return Invalid, [], []
@@ -108,7 +108,7 @@ def __is_multi_jsons(raw_src, delimiter, specified_types, logger, keys: list, va
     return True
 
 
-def __is_csv(raw_src, logger, keys: list, values_list: list) -> bool:
+def __is_csv(raw_src, specified_types, logger, keys: list, values_list: list) -> bool:
     src = raw_src.strip()
 
     # Line count is less than 1, it's csv only header or not csv.
@@ -125,7 +125,11 @@ def __is_csv(raw_src, logger, keys: list, values_list: list) -> bool:
 
             for row in df.values:
                 values = [None if type(v) is float and math.isnan(v) else v for v in row.tolist()]
-                values_list.append(values)
+                flatten_body = {k: v for k, v in zip(keys, values)}
+                print(flatten_body)
+                casted_body = util.traverse_casting(flatten_body, specified_types)
+                values_list.append(list(casted_body.values()))
+
         return True
     except ValueError as e:
         logger.debug(f"{src}: is not CSV. {e}")

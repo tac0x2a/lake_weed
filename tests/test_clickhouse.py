@@ -24,9 +24,45 @@ def test_return_basic_type_and_values():
     assert expected == res
 
 
+def test_return_basic_type_and_values_csv():
+    src = """
+    hello, world, bool, str
+    42, 128.4, true, "Hello,World"
+    """
+
+    expected = (
+        ("hello", "world", "bool", "str"),
+        ("Float64", "Float64", "UInt8", "String"),
+        [(42, 128.4, 1, "Hello,World")]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res
+
+
 def test_return_DateTime_and_UInt32_type_if_DateTime_like_string_provided():
     src = """
     { "hello" : "2018/11/14", "world" : "2018/11/15 11:22:33.123456789", "hoge" : "2018/13/15 11:22:33"}
+    """
+    expected = (
+        ("hello", "hello_ns", "world", "world_ns", "hoge"),
+        ("DateTime", "UInt32", "DateTime", "UInt32", "String"),
+        [
+            (
+                datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))),
+                0,
+                datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))),
+                123456789,
+                "2018/13/15 11:22:33"
+            )
+        ]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res
+
+def test_return_DateTime_and_UInt32_type_if_DateTime_like_string_provided_csv():
+    src = """
+    hello, world, hoge
+    "2018/11/14", "2018/11/15 11:22:33.123456789", "2018/13/15 11:22:33"
     """
     expected = (
         ("hello", "hello_ns", "world", "world_ns", "hoge"),
@@ -227,6 +263,21 @@ def test_return_String_type_if_provide_None_type():
         tuple(["value"]),
         tuple(["String"]),
         [tuple([None])]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res
+
+
+def test_return_csv_if_complex_expressions():
+    src = """
+    a,'b hoge',large, "c,fuga","none?"
+    10,"20","2,000",",,,",
+    """
+
+    expected = (
+        ("a", "'b hoge'", "large", "c,fuga", "none?"),
+        ("Float64", "Float64", "String", "String", "String"),
+        [(10, 20, "2,000", ",,,", None)]
     )
     res = clickhouse.data_string2type_value(src)
     assert expected == res
