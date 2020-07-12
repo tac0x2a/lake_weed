@@ -3,8 +3,7 @@
 
 ![Lake Weed](./doc/img/lakeweed_s.png)
 
-Lake Weed is elastic converter JSON to RDB record.
-
+Lake Weed is elastic parser for data-like string, JSON, JSON Lines, and CSV to use for constructin RDB query.
 
 # Usage
 ## Install package
@@ -14,7 +13,7 @@ pip install lakeweed
 
 PyPI: https://pypi.org/project/lakeweed/
 
-## Example(ClickHouse)
+## Example(Json test to ClickHouse)
 ```py
 from lakeweed import clickhouse
 
@@ -39,42 +38,53 @@ my_types = {
     "date__as_string": "str"
 }
 
-(types, values) = clickhouse.json2type_value(src_json, specified_types=my_types)
+(columns, types, values) = clickhouse.data_string2type_value(src_json, specified_types=my_types)
+
+print(columns)
+# (
+#   'array',
+#   'array_in_array',
+#   'nested_map__value',
+#   'map_in_array',
+#   'dates',
+#   'dates_ns',
+#   'date__as_datetime',
+#   'date__as_datetime_ns',
+#   'date__as_string',
+#   'str'
+# )
 
 print(types)
-# {
-#   'array': 'Array(Float64)',
-#   'array_in_array': 'Array(String)',
-#   'nested_map__value': 'Array(String)',
-#   'map_in_array': 'Array(String)',
-#   'dates': 'Array(DateTime)',
-#   'dates_ns': 'Array(UInt32)',
-#   'date__as_datetime': 'DateTime',
-#   'date__as_datetime_ns': 'UInt32',
-#   'date__as_string': 'String',
-#   'str': 'String'
-# }
+# (
+#   'Array(Float64)',
+#   'Array(String)',
+#   'Array(String)',
+#   'Array(String)',
+#   'Array(DateTime)',
+#   'Array(UInt32)',
+#   'DateTime',
+#   'UInt32',
+#   'String',
+#   'String'
+# )
 
 print(values)
-# {
-#   'array': [1, 2, 3],
-#   'array_in_array': ['[1.1, 2.2]', '[3.3, 4.4]'],
-#   'nested_map__value': ['[1, 2]', '[3, 4]'],
-#   'map_in_array': ['{"v": 1}', '{"v": 2}'],
-#   'dates': [
+# [(
+#   [1, 2, 3],
+#   ['[1.1, 2.2]', '[3.3, 4.4]'],
+#   ['[1, 2]', '[3, 4]'],
+#   ['{"v": 1}', '{"v": 2}'],
+#   [
 #     datetime.datetime(2019, 9, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)),
 #     datetime.datetime(2019, 9, 15, 14, 50, 3, 202000, tzinfo=tzoffset(None, 32400))
 #   ],
-#   'dates_ns': [
-#     101000000,
-#     202000000
-#    ],
-#   'date__as_datetime':
-#     datetime.datetime(2019, 9, 15, 14, 50, 3, 42042, tzinfo=tzoffset(None, 32400)),
-#   'date__as_datetime_ns': 42042043,
-#   'date__as_string': '2019/09/15 14:50:03.042042043 +0900',
-#   'str': 'Hello, LakeWeed'
-# }
+#   [101000000, 202000000],
+#   datetime.datetime(2019, 9, 15, 14, 50, 3, 42042, tzinfo=tzoffset(None, 32400)),
+#   42042043,
+#   '2019/09/15 14:50:03.042042043 +0900',
+#   'Hello, LakeWeed'
+# )]
+
 ```
 
 
