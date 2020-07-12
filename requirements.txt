@@ -1,4 +1,4 @@
 ###### Requirements without Version Specifiers ######`
 pytest
 python-dateutil
-pandas==0.25.3
+pandas==1.0.5
