@@ -3,8 +3,7 @@ from . import time_parser
 
 
 def flatten(src: dict, target=None, prefix="", delimiter="."):
-
-    if target == None:
+    if target is None:
         target = {}
 
     for k, v in src.items():
@@ -19,7 +18,14 @@ def flatten(src: dict, target=None, prefix="", delimiter="."):
 
 
 def traverse_casting(flatten_dict: dict, specified_types=None) -> dict:
-    if specified_types == None:
+    """
+    Apply specified_types and try to parse string as date time.
+
+    Returns:
+        dict -- return converted flatten_dict. Keys will not be modified.}
+    """
+
+    if specified_types is None:
         specified_types = {}
 
     new_items = {}

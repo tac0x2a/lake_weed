@@ -1,11 +1,8 @@
 import json
-import datetime
-from dateutil.tz import tzutc
 import logging
 
-from . import time_parser
 from .time_parser import DateTimeWithNS
-from . import util
+from .inferencial_parser import inferencial_parse
 
 
 def json2type_value(src_json_str: str, specified_types=None, logger=logging.getLogger("lakeweed__clickhouse")) -> tuple:
@@ -22,21 +19,13 @@ def json2type_value(src_json_str: str, specified_types=None, logger=logging.getL
         tuple -- return tuple (types, values). types={"column":"type on clickhouse", ...}, values={"column":"value on clickhouse", ...}
     """
 
-    if specified_types is None:
-        specified_types = {}
-
-    # flatten
-    body = json.loads(src_json_str)
-    flatten_body = util.flatten(body, delimiter="__")
-
-    # convert types
-    casted_body = util.traverse_casting(flatten_body, specified_types)
+    (format, keys, values_list) = inferencial_parse(src_json_str, specified_types, "__", logger)
 
     # specified type
     types = {}
     values = {}
 
-    for key, value in casted_body.items():
+    for key, value in {k: v for (k, v) in zip(keys, values_list[0])}.items():
         __json2lcickhouse_sub(key, value, types, values)
 
     return (types, values)
@@ -104,7 +93,8 @@ def __json2lcickhouse_sub(key, body, types, values):
         return
     if value is None:
         values[key] = None
-        types[key] = "String" # Todo: Need to find the table is already created.
+        # Todo: Need to find the table is already created.
+        types[key] = "String"
         return
 
     values[key] = str(value)
