@@ -1,5 +1,6 @@
 # Lake Weed
-[![Build Status](https://travis-ci.org/tac0x2a/lake_weed.svg?branch=master)](https://travis-ci.org/tac0x2a/lake_weed)
+
+![Python application](https://github.com/tac0x2a/lake_weed/workflows/Python%20application/badge.svg)
 
 ![Lake Weed](./doc/img/lakeweed_s.png)
 
