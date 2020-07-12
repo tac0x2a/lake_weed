@@ -317,3 +317,19 @@ def test_return_multi_basic_type_and_values():
     assert expected == res
 
 
+def test_return_types_with_inoreing_null_value():
+    src = """
+    { "f" : 42,   "b" : true, "d": "2019/09/15 14:50:03.101 +0900", "s" : "Hello,World" }
+    { "f" : null, "b" : null, "d": null,                            "s" : null }
+    """
+
+    expected = (
+        ("f", "b", "d", "d_ns", "s"),
+        ("Float64", "UInt8", "DateTime", "UInt32", "String"),
+        [
+            (42, 1, datetime(2019, 9, 15, 14, 50, 3, 101000, timezone(timedelta(hours=9))), 101000000, "Hello,World"),
+            (None, None, None, None, None)
+        ]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res

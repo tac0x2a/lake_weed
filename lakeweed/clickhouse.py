@@ -31,23 +31,77 @@ def data_string2type_value(src_json_str: str, specified_types=None, logger=loggi
 
     (format, keys, values_list) = inferencial_parse(src_json_str, specified_types, "__", logger)
 
-    columns_res = OrderedDict()
-    types_res = []
+    name2type_value_map = []
     values_list_res = []
+    types_integrated = OrderedDict()
 
     # specified type
     for values in values_list:
+        (columns, types, values) = __data_string2type_value(keys, values, specified_types, logger)
+        name2type_value_map.append({k: (t, v) for k, t, v in zip(columns, types, values)})
 
-        types_tmp = []
-        values_tmp = []
+        # Detect data type for integration. Apply types after traverse all data.
+        for new_col, new_type in zip(columns, types):
+            if new_col not in types_integrated.keys():
+                types_integrated[new_col] = new_type
+                continue
 
-        for key, value in zip(keys, values):
-            __datastring2lcickhouse_sub(key, value, columns_res, types_tmp, values_tmp)
-            types_res = types_tmp  # Todo need to integrate type
+            if new_type is None:  # always use current data type
+                continue
 
-        values_list_res.append(tuple(values_tmp))
+            current_type = types_integrated[new_col]
+            if current_type == new_type:
+                continue
 
-    return (tuple(columns_res.keys()), tuple(types_res), values_list_res)
+            (correct_type, converter) = __type_map(current_type, new_col)
+            types_integrated[new_col] = correct_type
+
+    # If all data is None, type regard as String
+    for c, t in types_integrated.items():
+        if t is None:
+            types_integrated[c] = "String"
+
+    # Re-parse this values.
+    for old_col_type_value_map in name2type_value_map:
+        new_values = []
+        for new_col, new_type in types_integrated.items():
+            if new_col not in old_col_type_value_map.keys():
+                new_values.append(None)
+                continue
+
+            (old_type, old_value) = old_col_type_value_map[new_col]
+            if old_type is None:
+                new_values.append(None)
+                continue
+            if old_type == new_type:
+                new_values.append(old_value)
+                continue
+
+            (new_type, converter) = __type_map(old_type, new_type)
+            new_value = converter(old_value)
+            new_values.append(new_value)
+
+        values_list_res.append(tuple(new_values))
+
+    # values_list_res.append(tuple(values))
+
+    columns_res = tuple(types_integrated.keys())
+    types_res = tuple(types_integrated.values())
+
+    return (columns_res, tuple(types_res), values_list_res)
+
+
+def __data_string2type_value(keys: tuple, values: list, specified_types, logger) -> (tuple, tuple, list):
+
+    columns_tmp = OrderedDict()
+    types_tmp = []
+    values_tmp = []
+
+    for key, value in zip(keys, values):
+        __datastring2lcickhouse_sub(key, value, columns_tmp, types_tmp, values_tmp)
+
+    return (tuple(columns_tmp.keys()), tuple(types_tmp), values_tmp)
+
 
 
 def __datastring2clickhouse_sub_list(key, list, columns: OrderedDict, types: list, values: list):
@@ -96,7 +150,7 @@ def __datastring2lcickhouse_sub(key, body, columns: OrderedDict, types: list, va
     if type(body) is list:
         __datastring2clickhouse_sub_list(key, body, columns, types, values)
         return
-    print(columns)
+
     # is atomic type.
     value = body
     columns[key] = True
@@ -125,10 +179,38 @@ def __datastring2lcickhouse_sub(key, body, columns: OrderedDict, types: list, va
     if value is None:
         values.append(None)
         # Todo: Need to find the table is already created.
-        types.append("String")
+        types.append(None)
         return
 
     values.append(str(value))
     types.append("String")
 
     return
+
+
+__TypeMap = {
+    # sorted(["Float64", "UInt8", "UInt32", "DateTime", "String"])
+    # ['DateTime', 'Float64', 'String', 'UInt32', 'UInt8']
+
+    # (From, To): lambda value: (converted_type, converted_value)
+    "DateTime" + "Float64": ("String",  lambda v: str(v)),
+    "DateTime" + "UInt8":   ("String", lambda v: str(v)),
+    "DateTime" + "UInt32":  ("String", lambda v: str(v)),
+    "DateTime" + "String":  ("String", lambda v: str(v)),
+
+    "Float64" + "UInt8":    ("Float64", lambda v: float(v)),
+    "Float64" + "UInt32":   ("Float64", lambda v: float(v)),
+    "Float64" + "String":   ("String",  lambda v: str(v)),
+
+    "String" + "UInt8" :    ("String", lambda v: str(v)),
+    "String" + "UInt32":      ("String", lambda v: str(v)),
+
+    "UInt32" + "UInt8":    ("UInt32", lambda v: v),
+}
+
+
+def __type_map(from_: str, to: str):
+    from_to = "".join(sorted([from_, to]))
+    if from_to not in __TypeMap:  # Todo collection support.
+        return ("String", lambda v: str(v))
+    return __TypeMap[from_to]
