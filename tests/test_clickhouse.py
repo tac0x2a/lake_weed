@@ -29,8 +29,8 @@ def test_return_DateTime_and_UInt32_type_if_DateTime_like_string_provided():
     { "hello" : "2018/11/14", "world" : "2018/11/15 11:22:33.123456789", "hoge" : "2018/13/15 11:22:33"}
     """
     expected = (
-        ("hello",    "hello_ns", "world",    "world_ns", "hoge"),
-        ("DateTime", "UInt32",   "DateTime", "UInt32",   "String"),
+        ("hello", "hello_ns", "world", "world_ns", "hoge"),
+        ("DateTime", "UInt32", "DateTime", "UInt32", "String"),
         [
             (
                 datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))),
@@ -67,7 +67,7 @@ def test_return_array_values():
     expected = (
         ("hello", "world", "bool", "str"),
         ("Array(Float64)", "Array(Float64)", "Array(UInt8)", "Array(String)"),
-        [([42, -84, 128],  [128.4, -255.3], [1, 0, 1, 0],  ['Hello', 'World', 'Hoge'])]
+        [([42, -84, 128], [128.4, -255.3], [1, 0, 1, 0], ['Hello', 'World', 'Hoge'])]
     )
     res = clickhouse.data_string2type_value(src)
     assert expected == res
