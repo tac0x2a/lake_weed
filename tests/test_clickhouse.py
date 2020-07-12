@@ -333,3 +333,40 @@ def test_return_types_with_inoreing_null_value():
     )
     res = clickhouse.data_string2type_value(src)
     assert expected == res
+
+
+def test_return_types_with_optimal_value():
+    src = """
+    { "f" : 42,   "b" : true,   "d": "2019/09/15 14:50:03.101 +0900"}
+    { "f" : "42", "b" : "true", "d": "2019/13/15 14:50:03.101 +0900"}
+    """
+
+    expected = (
+        ("f", "b", "d"),
+        ("String", "String", "String"),
+        [
+            ("42", "1",    "2019-09-15 14:50:03.101000+09:00"),
+            ("42", "true", "2019/13/15 14:50:03.101 +0900"),
+        ]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res
+
+
+def test_return_types_csv_with_optimal_value():
+    src = """
+    f,b,d
+    42,true,2019/09/15 14:50:03.101 +0900
+    "42","true",2019/13/15 14:50:03.101 +0900
+    """
+
+    expected = (
+        ("f", "b", "d"),
+        ("Float64", "UInt8", "String"),
+        [
+            (42, 1, "2019-09-15 14:50:03.101000+09:00"),
+            (42, 1, "2019/13/15 14:50:03.101 +0900"),
+        ]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res

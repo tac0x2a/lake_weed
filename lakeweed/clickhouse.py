@@ -61,6 +61,13 @@ def data_string2type_value(src_json_str: str, specified_types=None, logger=loggi
         if t is None:
             types_integrated[c] = "String"
 
+    # Remove nanosec column if DateTime column changed to String column.
+    # If the column is not DateTime type, Nano-sec column is not required.
+    date_columns = [c[0:-3] for c in types_integrated.keys() if c.endswith("_ns")]
+    for dt_col in date_columns:
+        if types_integrated[dt_col] not in ["DateTime", "Array(DateTime)"]:
+            del types_integrated[dt_col + "_ns"]
+
     # Re-parse this values.
     for old_col_type_value_map in name2type_value_map:
         new_values = []

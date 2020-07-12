@@ -119,7 +119,7 @@ def __is_csv(raw_src, specified_types, logger, keys: list, values_list: list) ->
     # If pandas can read src as csv, it is guessed csv.
     try:
         with StringIO(src) as io:
-            df = pd.read_csv(io, skipinitialspace=True)
+            df = pd.read_csv(io, skipinitialspace=True)  # Todo apply specified types by dtype ?
 
             keys.extend(list(df.columns))
 
