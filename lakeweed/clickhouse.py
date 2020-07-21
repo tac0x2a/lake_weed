@@ -50,10 +50,15 @@ def data_string2type_value(src_json_str: str, specified_types=None, logger=loggi
                 continue
 
             current_type = types_integrated[new_col]
+            if current_type is None:  # always use new_type
+                types_integrated[new_col] = new_type
+                continue
+
             if current_type == new_type:
                 continue
 
-            (correct_type, converter) = __type_map(current_type, new_col)
+
+            (correct_type, converter) = __type_map(current_type, new_type)
             types_integrated[new_col] = correct_type
 
     # If all data is None, type regard as String
@@ -217,7 +222,7 @@ __TypeMap = {
 
 
 def __type_map(from_: str, to: str):
-    from_to = "".join(sorted([from_, to]))
+    from_to = "".join(sorted([str(s) for s in [from_, to]]))
     if from_to not in __TypeMap:  # Todo collection support.
         return ("String", lambda v: str(v))
     return __TypeMap[from_to]
