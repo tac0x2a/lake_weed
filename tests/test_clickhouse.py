@@ -370,3 +370,41 @@ def test_return_types_csv_with_optimal_value():
     )
     res = clickhouse.data_string2type_value(src)
     assert expected == res
+
+
+def test_return_types_csv_with_none_value():
+    src = """
+    a,b,c
+    42,,
+    ,"true",2019/9/15 14:50:03.101 +0900
+    """
+
+    expected = (
+        ("a", "b", "c", "c_ns"),
+        ("Float64", "UInt8", "DateTime", "UInt32"),
+        [
+            (42, None, None, None),
+            (None, 1, datetime(2019, 9, 15, 14, 50, 3, 101000, timezone(timedelta(hours=9))), 101000000)
+        ]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res
+
+
+def test_return_types_csv_all_none_value():
+    src = """
+    a,b,c
+    ,,
+    ,,
+    """
+
+    expected = (
+        ("a", "b", "c"),
+        ("String", "String", "String"),
+        [
+            (None, None, None),
+            (None, None, None)
+        ]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res
