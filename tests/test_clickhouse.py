@@ -408,3 +408,22 @@ def test_return_types_csv_all_none_value():
     )
     res = clickhouse.data_string2type_value(src)
     assert expected == res
+
+
+
+def test_return_empty_array_if_type_is_Array_value_is_null():
+    src = """
+    { "a" : [1,2,3] }
+    { "a" : null }
+    """
+
+    expected = (
+        ("a", ),
+        ("Array(Float64)", ),
+        [
+            ([1, 2, 3], ),
+            ([], )
+        ]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res

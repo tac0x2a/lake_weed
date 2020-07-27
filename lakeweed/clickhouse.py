@@ -83,7 +83,10 @@ def data_string2type_value(src_json_str: str, specified_types=None, logger=loggi
 
             (old_type, old_value) = old_col_type_value_map[new_col]
             if old_type is None:
-                new_values.append(None)
+                none_value = None
+                if new_type.startswith("Array"):
+                    none_value = []
+                new_values.append(none_value)
                 continue
             if old_type == new_type:
                 new_values.append(old_value)
