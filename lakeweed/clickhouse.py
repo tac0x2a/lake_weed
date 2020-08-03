@@ -6,9 +6,9 @@ from .time_parser import DateTimeWithNS
 from .inferencial_parser import inferencial_parse
 
 
-def data_string2type_value(src_json_str: str, specified_types=None, logger=logging.getLogger("lakeweed__clickhouse")) -> (tuple, tuple, list):
+def data_string2type_value(src_str: str, specified_types=None, logger=logging.getLogger("lakeweed__clickhouse")) -> (tuple, tuple, list):
     """
-    Convert json string to python dict with data types for Clickhouse
+    Convert string to python dict with data types for Clickhouse
 
     Arguments:
         src_str {str} -- Json, JsonLines, or CSV string.
@@ -29,7 +29,7 @@ def data_string2type_value(src_json_str: str, specified_types=None, logger=loggi
                            Order of inside list values correspond to a columns order. In JsonLines, if there is not key in some record, will be set None value.
     """
 
-    (format, keys, values_list) = inferencial_parse(src_json_str, specified_types, "__", logger)
+    (format, keys, values_list) = inferencial_parse(src_str, specified_types, "__", logger)
 
     name2type_value_map = []
     values_list_res = []
