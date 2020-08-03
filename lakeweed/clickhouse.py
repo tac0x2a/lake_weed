@@ -208,7 +208,7 @@ __TypeMap = {
     # ['DateTime', 'Float64', 'String', 'UInt32', 'UInt8']
 
     # (From, To): lambda value: (converted_type, converted_value)
-    "DateTime" + "Float64": ("String",  lambda v: str(v)),
+    "DateTime" + "Float64": ("String", lambda v: str(v)),
     "DateTime" + "UInt8":   ("String", lambda v: str(v)),
     "DateTime" + "UInt32":  ("String", lambda v: str(v)),
     "DateTime" + "String":  ("String", lambda v: str(v)),
@@ -218,9 +218,9 @@ __TypeMap = {
     "Float64" + "String":   ("String",  lambda v: str(v)),
 
     "String" + "UInt8" :    ("String", lambda v: str(v)),
-    "String" + "UInt32":      ("String", lambda v: str(v)),
+    "String" + "UInt32":    ("String", lambda v: str(v)),
 
-    "UInt32" + "UInt8":    ("UInt32", lambda v: v),
+    "UInt32" + "UInt8":     ("UInt32", lambda v: v),
 }
 
 
