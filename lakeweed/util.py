@@ -137,37 +137,6 @@ def specified_type2lakeweed_type(specified_type):
     return __AliasTypes.get(specified_type.upper(), specified_type)
 
 
-def traverse_casting(flatten_dict: dict, specified_types=None) -> dict:
-    """
-    Apply specified_types and try to parse string as date time.
-
-    Returns:
-        dict -- return converted flatten_dict. Keys will not be modified.}
-    """
-
-    if specified_types is None:
-        specified_types = {}
-
-    new_items = {}
-    for k, v in flatten_dict.items():
-
-        # Convert specified type
-        if k in specified_types.keys():
-            specified_type = specified_types[k]
-
-            try:
-                new_items[k] = __cast_specified(v, specified_type)
-            except TypeError:
-                new_items[k] = v
-                pass  # TODO logging or abort
-
-        # Convert elastic type
-        else:
-            new_items[k] = __datetime_parse(v)
-
-    return new_items
-
-
 def __datetime_parse(value):
     # list
     if type(value) is list:
