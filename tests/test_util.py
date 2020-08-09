@@ -72,8 +72,33 @@ def test_flatten_array():
     assert expected == res
 
 
-if __name__ == '__main__':
-    pytest.main(['-v', __file__])
+def test_basic_data_types():
+    src = [
+        42,
+        42.195,
+        True,
+        "2020-08-09 11:04:00",
+        "Hello, LakeWeed",
+        [1, 2.2, 3.3],
+        [1.1, 2, 3],
+        ["2020-08-09 11:04:00", "2020-08-09 11:05:00", "2020-08-09 11:06:00"],
+        ["2020-08-09 11:04:00", "hoge"],
+        [[1, 2, 3], [], ["hoge"]],
+    ]
+    expected = [
+        "Float",
+        "Float",
+        "Bool",
+        "DateTime",
+        "String",
+        "Array(Float)",
+        "Array(Float)",
+        "Array(DateTime)",
+        "Array(DateTime)",
+        "Array(Array(Float))"
+    ]
+    res = util.data_types(src)
+    assert expected == res
 
 
 def test_specified_int_int():
