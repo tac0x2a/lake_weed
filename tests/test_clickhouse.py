@@ -228,6 +228,28 @@ def test_return_values_as_string_for_clickhouse_query():
     assert expected == (res[0], res[2])
 
 
+def test_return_None_if_invalid_datetime_format_string_in_array():
+    src = """
+    {
+      "datetime"  : ["2019/09/15 14:50:03", "hoge", "2019/09/15 14:50:04"]
+    }
+    """
+    expected = (
+        ("datetime", "datetime_ns"),
+        ("Array(DateTime)", "Array(UInt32)"),
+        [(
+            [
+                datetime(2019, 9, 15, 14, 50, 3, 0, timezone(timedelta(hours=0))),
+                None,
+                datetime(2019, 9, 15, 14, 50, 4, 0, timezone(timedelta(hours=0)))
+            ],
+            [0, None, 0],
+        )]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res
+
+
 def test_return_values_with_specivied_types():
     src = """
     {
@@ -427,6 +449,7 @@ def test_return_types_csv_with_none_value():
     )
     res = clickhouse.data_string2type_value(src)
     assert expected == res
+
 
 
 def test_return_types_csv_all_none_value():
