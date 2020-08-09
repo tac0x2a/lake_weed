@@ -72,137 +72,30 @@ def test_flatten_array():
     assert expected == res
 
 
-if __name__ == '__main__':
-    pytest.main(['-v', __file__])
-
-
-def test_specified_int_int():
-    src = 42
-    specified = "int"
-    expected = 42
-    res = util.__cast_specified(src, specified)
+def test_basic_data_types():
+    src = [
+        42,
+        42.195,
+        True,
+        "2020-08-09 11:04:00",
+        "Hello, LakeWeed",
+        [1, 2.2, 3.3],
+        [1.1, 2, 3],
+        ["2020-08-09 11:04:00", "2020-08-09 11:05:00", "2020-08-09 11:06:00"],
+        ["2020-08-09 11:04:00", "hoge"],
+        [[1, 2, 3], [], ["hoge"]],
+    ]
+    expected = [
+        "Float",
+        "Float",
+        "Bool",
+        "DateTime",
+        "String",
+        "Array(Float)",
+        "Array(Float)",
+        "Array(DateTime)",
+        "Array(DateTime)",
+        "Array(Array(Float))"
+    ]
+    res = util.data_types(src)
     assert expected == res
-    assert type(expected) == type(res)
-
-
-def test_specified_float_float():
-    src = -42.2
-    specified = "float"
-    expected = -42.2
-    res = util.__cast_specified(src, specified)
-    assert expected == res
-    assert type(expected) == type(res)
-
-
-def test_specified_int_float():
-    src = 42
-    specified = "float"
-    expected = 42.0
-    res = util.__cast_specified(src, specified)
-    assert expected == res
-    assert type(expected) == type(res)
-
-
-def test_specified_float_int():
-    src = 42.0
-    specified = "int"
-    expected = 42
-    res = util.__cast_specified(src, specified)
-    assert expected == res
-    assert type(expected) == type(res)
-
-
-def test_specified_int_string():
-    src = 42
-    specified = "string"
-    expected = "42"
-    res = util.__cast_specified(src, specified)
-    assert expected == res
-    assert type(expected) == type(res)
-
-
-def test_specified_float_string():
-    src = 42.195
-    specified = "string"
-    expected = "42.195"
-    res = util.__cast_specified(src, specified)
-    assert expected == res
-    assert type(expected) == type(res)
-
-
-def test_specified_string_float():
-    src = "42.195"
-    specified = "double"  # double and decimal are available instead of float
-    expected = 42.195
-    res = util.__cast_specified(src, specified)
-    assert expected == res
-    assert type(expected) == type(res)
-
-
-def test_specified_raise_if_not_valid_type():
-    src = "42.195"
-    specified = "INVALID"  # double and decimal are available instead of float
-    with pytest.raises(TypeError):
-        util.__cast_specified(src, specified)
-
-
-def test_return_traverse_casting_datetime():
-    src = {
-        "hello": "2018/11/14",
-        "world": "2018/11/15 11:22:33.123456789",
-        "hoge": "2018/13/15 11:22:33"
-    }
-    expected = {
-        "hello": DateTimeWithNS(datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))), 0, "2018/11/14"),
-        "world": DateTimeWithNS(datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))), 123456789, "2018/11/15 11:22:33.123456789"),
-        "hoge": "2018/13/15 11:22:33"
-    }
-    res = util.traverse_casting(src)
-    assert expected == res
-
-
-def test_return_traverse_casting_specified_datetime_as_string():
-    src = {
-        "hello": "2018/11/14",
-        "world": "2018/11/15 11:22:33.123456789",
-        "hoge": "2018/13/15 11:22:33"
-    }
-    specified_types = {
-        "world": "String"
-    }
-    expected = {
-        "hello": DateTimeWithNS(datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))), 0, "2018/11/14"),
-        "world": "2018/11/15 11:22:33.123456789",
-        "hoge": "2018/13/15 11:22:33"
-    }
-    res = util.traverse_casting(src, specified_types=specified_types)
-    assert expected == res
-
-
-def test_return_traverse_casting_datetime_array():
-    src = {
-        "hello": ["2018/11/14", "2018/11/15 11:22:33.123456789"]
-    }
-    expected = {
-        "hello": [
-            DateTimeWithNS(datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))), 0, "2018/11/14"),
-            DateTimeWithNS(datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))), 123456789, "2018/11/15 11:22:33.123456789")
-        ]
-    }
-    res = util.traverse_casting(src)
-    assert expected == res
-
-
-def test_traverse_casting_return_original_string_array_if_contains_invalid_datetime():
-    src = {
-        "hello": ["2018/11/14", "2018/11/15 11:22:33.123456789", "2018/13/15 11:22:33"]
-    }
-    expected = {
-        "hello": ["2018/11/14", "2018/11/15 11:22:33.123456789", "2018/13/15 11:22:33"]
-    }
-    res = util.traverse_casting(src)
-    assert expected == res
-
-
-if __name__ == '__main__':
-    pytest.main(['-v', __file__])

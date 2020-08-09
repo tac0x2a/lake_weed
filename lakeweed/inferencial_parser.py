@@ -52,10 +52,8 @@ def __is_json(src, delimiter, specified_types, logger, keys: list, values_list: 
     try:
         body = json.loads(src)
         flatten_body = util.flatten(body, delimiter=delimiter)
-        casted_body = util.traverse_casting(flatten_body, specified_types)
-
-        keys.extend(casted_body.keys())
-        values_list.append(list(casted_body.values()))
+        keys.extend(flatten_body.keys())
+        values_list.append(list(flatten_body.values()))
 
         return True
 
@@ -126,8 +124,7 @@ def __is_csv(raw_src, specified_types, logger, keys: list, values_list: list) ->
             for row in df.values:
                 values = [None if type(v) is float and math.isnan(v) else v for v in row.tolist()]
                 flatten_body = {k: v for k, v in zip(keys, values)}
-                casted_body = util.traverse_casting(flatten_body, specified_types)
-                values_list.append(list(casted_body.values()))
+                values_list.append(list(flatten_body.values()))
 
         return True
     except ValueError as e:

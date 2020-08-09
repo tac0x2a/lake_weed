@@ -194,3 +194,21 @@ twine upload --repository pypi dist/*
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+## TypeMap
+### Clickhouse
+
++ `Float`, `Double` : `Float64`
++ `Int`, `Integer` : `Int64`
++ `Bool`, `Boolean` : `UInt8` (True: 1, False: 0)
++ `String`, `Str` : `String`
++ `DateTime` : It will be split to 2 columns.
+  + `DateTime`: Without milli seconds
+  + `UInt32`: Nano seconds
++ `Array(Float)`, `Array(Double)` : `Array(Float64)`
++ `Array(Int)`, `Array(Integer)` : `Array(Int64)`
++ `Array(Bool)`, `Array(Boolean)` : `Array(UInt8)`
++ `Array(String)`,`Array(Str)`  : `Array(String)`
++ `Array(DateTime)` : It will be split to 2 columns.
+  + `Array(DateTime)`: Without milli seconds
+  + `Array(UInt32)`: Nano Seconds
