@@ -59,6 +59,7 @@ def test_return_DateTime_and_UInt32_type_if_DateTime_like_string_provided():
     res = clickhouse.data_string2type_value(src)
     assert expected == res
 
+
 def test_return_DateTime_and_UInt32_type_if_DateTime_like_string_provided_csv():
     src = """
     hello, world, hoge
@@ -157,6 +158,20 @@ def test_return_string_Array_if_empyt_array():
     assert expected == res
 
 
+def test_return_string_Array_if_nested_array():
+    src = """
+    { "nested" : [[[],[1,2,3]]]}
+    """
+
+    expected = (
+        ("nested", ),
+        ("Array(String)", ),
+        [(['[[], [1, 2, 3]]'], )]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res
+
+
 def test_return_String_nested_array():
     src = """
     {
@@ -227,6 +242,28 @@ def test_return_values_with_specivied_types():
         tuple(["datetime"]),
         tuple(["String"]),
         [tuple(["2019/09/15 14:50:03.042042043 +0900"])]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+def test_return_values_with_specified_types_null():
+    src = """
+    {
+      "i"  : "42",
+      "d"  : "42",
+      "n"  : null
+    }
+    """
+    specified_types = {
+        "i": "integer",
+        "d": "double",
+        "n": "double"
+    }
+
+    expected = (
+        tuple(["i", "d", "n"]),
+        tuple(["Int64", "Float64", "Float64"]),
+        [tuple([42, 42, None])]
     )
     res = clickhouse.data_string2type_value(src, specified_types=specified_types)
     assert expected == res
@@ -345,7 +382,8 @@ def test_return_types_with_optimal_value():
         ("f", "b", "d"),
         ("String", "String", "String"),
         [
-            ("42", "1",    "2019-09-15 14:50:03.101000+09:00"),
+             # it can't keep 'true', because it will be converted to True in json.loads...
+            ("42", "True", "2019/09/15 14:50:03.101 +0900"),
             ("42", "true", "2019/13/15 14:50:03.101 +0900"),
         ]
     )
@@ -364,7 +402,7 @@ def test_return_types_csv_with_optimal_value():
         ("f", "b", "d"),
         ("Float64", "UInt8", "String"),
         [
-            (42, 1, "2019-09-15 14:50:03.101000+09:00"),
+            (42, 1, "2019/09/15 14:50:03.101 +0900"),
             (42, 1, "2019/13/15 14:50:03.101 +0900"),
         ]
     )
@@ -410,10 +448,10 @@ def test_return_types_csv_all_none_value():
     assert expected == res
 
 
-
 def test_return_empty_array_if_type_is_Array_value_is_null():
     src = """
     { "a" : [1,2,3] }
+    { "a" : [] }
     { "a" : null }
     """
 
@@ -422,7 +460,8 @@ def test_return_empty_array_if_type_is_Array_value_is_null():
         ("Array(Float64)", ),
         [
             ([1, 2, 3], ),
-            ([], )
+            ([], ),
+            ([], ) # Clickhouse Array is not nullable.
         ]
     )
     res = clickhouse.data_string2type_value(src)
