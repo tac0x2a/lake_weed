@@ -22,6 +22,10 @@ class DateTimeWithNS:
     def __str__(self) -> str:
         return self.original_string
 
+    @classmethod
+    def parse(cls, datetime_like_string: str):
+        return elastic_time_parse(datetime_like_string)
+
 
 def elastic_time_parse(src, logger=None) -> DateTimeWithNS:
     """Parse src string as datetime and nanosec part. Raise exception if src format is NOT valid. """

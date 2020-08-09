@@ -66,10 +66,9 @@ def data_string2type_value(src_str: str, specified_types={}, logger=logging.getL
     for values in src_values_list:
         ch_values = []
         for c, t, v in zip(column_types.keys(), column_types.values(), values):
-            ch_ctv_list = __data_value_specified(c, v, t)
-            for ch_c, ch_t, ch_v in ch_ctv_list:
-                ch_column_types[ch_c] = ch_t
-                ch_values.append(ch_v)
+            ch_c, ch_t, ch_v = __data_value_specified(c, v, t)
+            ch_column_types[ch_c] = ch_t
+            ch_values.append(ch_v)
         ch_values_list.append(tuple(ch_values))
 
     columns_res = tuple(ch_column_types.keys())
@@ -78,7 +77,7 @@ def data_string2type_value(src_str: str, specified_types={}, logger=logging.getL
     return (columns_res, types_res, ch_values_list)
 
 
-def __data_value_specified(column, value, specified_type, depth=0) -> list:
+def __data_value_specified(column, value, specified_type, depth=0) -> tuple:
     t = str(specified_type).upper()
 
     if t.startswith("ARRAY"):
@@ -86,67 +85,49 @@ def __data_value_specified(column, value, specified_type, depth=0) -> list:
 
     if t in ["FLOAT"]:
         v = convert_or_default(lambda: float(value), None)
-        return [(column, "Float64", v)]
+        return (column, "Float64", v)
     if t in ["INT"]:
         v = convert_or_default(lambda: int(value), None)
-        return [(column, "Int64", v)]
+        return (column, "Int64", v)
     if t in ['BOOL']:
         v = convert_or_default(lambda: 1 if bool(value) else 0, None)
         if value is None:
             v = None
-        return [(column, "UInt8", v)]
+        return (column, "UInt8", v)
     if t == 'DATETIME':
-        (dt, ns) = convert_or_default(lambda: elastic_time_parse(str(value)).tupple(), (None, None))
-        return [(column, "DateTime", dt), (f"{column}_ns", "UInt32", ns)]
+        dt, ns = convert_or_default(lambda: elastic_time_parse(str(value)).tupple(), (None, None))
+
+        return (column, "DateTime64(6)", dt)
     if t in ['STRING', 'STR']:
         if isinstance(value, (list, dict, bool)):
             value = convert_or_default(lambda: json.dumps(value), None)
         v = convert_or_default(lambda: None if value is None else str(value), None)
-        return [(column, "String", v)]
+        return (column, "String", v)
     # Todo need verify spec file method.
     logging.warning(f"Specified type '{str(specified_type)}' is not supported.")
-    return [(column, None, value)]
+    return (column, None, value)
 
 
 def __list_data_value_specified(column, list_value, specified_type, depth) -> list:  # [(column, "Array(Type)", value), ]
 
     if depth > 0:
         json_str = convert_or_default(lambda: json.dumps(list_value), None)
-        return [(column, f"String", json_str)]
+        return (column, f"String", json_str)
 
     inner_type = get_array_inner_type(specified_type)
 
     values = []
-    ctv_list = __data_value_specified("dummy", None, inner_type, depth + 1)
-    dummy, values_type, dummy = ctv_list[0]
+    dummy, values_type, dummy = __data_value_specified("dummy", None, inner_type, depth + 1)
 
     if list_value is None or not isinstance(list_value, (list)):
-        res = [(column, f"Array({values_type})", [])]
-        if values_type == "DateTime":
-            (col, typ, val) = ctv_list[1]
-            res.append((f"{column}_ns", f"Array({typ})", []))
-        return res
-
-    values_ns = []
-    values_ns_type = None
+        return (column, f"Array({values_type})", [])
 
     for v in list_value:
-        ctv_list = __data_value_specified("dummy", v, inner_type, depth + 1)
-        (col, typ, val) = ctv_list[0]
+        col, typ, val = __data_value_specified("dummy", v, inner_type, depth + 1)
         values.append(val)
         values_type = typ
 
-        # If value is date time, store additional column has nano sec.
-        if len(ctv_list) > 1:
-            (col, typ, val) = ctv_list[1]
-            values_ns.append(val)
-            values_ns_type = typ
-
-    res = [(column, f"Array({values_type})", values)]
-    if values_type == "DateTime" or len(values_ns) > 1:
-        res.append((f"{column}_ns", f"Array({values_ns_type})", values_ns))
-
-    return res
+    return (column, f"Array({values_type})", values)
 
 
 def convert_or_default(value_lambda, default):
