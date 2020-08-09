@@ -2,6 +2,8 @@ from datetime import datetime, timezone, timedelta
 
 from lakeweed import clickhouse
 
+from lakeweed.time_parser import DateTimeWithNS
+
 
 def test_return_empty_set():
     src = "{}"
@@ -39,19 +41,17 @@ def test_return_basic_type_and_values_csv():
     assert expected == res
 
 
-def test_return_DateTime_and_UInt32_type_if_DateTime_like_string_provided():
+def test_return_DateTime64_type_if_DateTime_like_string_provided():
     src = """
     { "hello" : "2018/11/14", "world" : "2018/11/15 11:22:33.123456789", "hoge" : "2018/13/15 11:22:33"}
     """
     expected = (
-        ("hello", "hello_ns", "world", "world_ns", "hoge"),
-        ("DateTime", "UInt32", "DateTime", "UInt32", "String"),
+        ("hello", "world", "hoge"),
+        ("DateTime64(9)", "DateTime64(9)", "String"),
         [
             (
-                datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))),
-                0,
-                datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))),
-                123456789,
+                DateTimeWithNS.parse("2018/11/14"),
+                DateTimeWithNS.parse("2018/11/15 11:22:33.123456789"),
                 "2018/13/15 11:22:33"
             )
         ]
@@ -60,20 +60,18 @@ def test_return_DateTime_and_UInt32_type_if_DateTime_like_string_provided():
     assert expected == res
 
 
-def test_return_DateTime_and_UInt32_type_if_DateTime_like_string_provided_csv():
+def test_return_DateTime64_type_if_DateTime_like_string_provided_csv():
     src = """
     hello, world, hoge
     "2018/11/14", "2018/11/15 11:22:33.123456789", "2018/13/15 11:22:33"
     """
     expected = (
-        ("hello", "hello_ns", "world", "world_ns", "hoge"),
-        ("DateTime", "UInt32", "DateTime", "UInt32", "String"),
+        ("hello", "world", "hoge"),
+        ("DateTime64(9)", "DateTime64(9)", "String"),
         [
             (
-                datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))),
-                0,
-                datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0))),
-                123456789,
+                DateTimeWithNS.parse("2018/11/14"),
+                DateTimeWithNS.parse("2018/11/15 11:22:33.123456789"),
                 "2018/13/15 11:22:33"
             )
         ]
@@ -110,20 +108,19 @@ def test_return_array_values():
     assert expected == res
 
 
-def test_return_String_array_values_if_DateTime_like_strings():
+def test_return_DateTime64_array_if_DateTime_like_strings():
     src = """
     {"hello" : ["2018/11/14", "2018/11/15 11:22:33.123456789"]}
     """
 
     expected = (
-        ("hello", "hello_ns"),
-        ("Array(DateTime)", "Array(UInt32)"),
+        ("hello", ),
+        ("Array(DateTime64(9))", ),
         [(
             [
-                datetime(2018, 11, 14, 0, 0, 0, 0, timezone(timedelta(hours=0))),
-                datetime(2018, 11, 15, 11, 22, 33, 123456, timezone(timedelta(hours=0)))
+                DateTimeWithNS.parse("2018/11/14"),
+                DateTimeWithNS.parse("2018/11/15 11:22:33.123456789")
             ],
-            [0, 123456789]
         )]
     )
     res = clickhouse.data_string2type_value(src)
@@ -234,20 +231,18 @@ def test_return_values_as_string_for_clickhouse_query():
     }
     """
     expected = (
-        ("array", "hello", "world__value", "hoge", "dates", "dates_ns", "date", "date_ns", "str"),
-        ("Array(Float64)", "Array(String)", "Array(String)", "Array(String)", "Array(DateTime)", "Array(UInt32)", "DateTime", "UInt32", "String"),
+        ("array", "hello", "world__value", "hoge", "dates", "date", "str"),
+        ("Array(Float64)", "Array(String)", "Array(String)", "Array(String)", "Array(DateTime64(9))", "DateTime64(9)", "String"),
         [(
             [1, 2, 3],
             ['[1.1, 2.2]', '[3.3, 4.4]'],
             ['[1, 2]', '[3, 4]'],
             ['{"v": 1}', '{"v": 2}'],
             [
-                datetime(2019, 9, 15, 14, 50, 3, 101000, timezone(timedelta(hours=9))),
-                datetime(2019, 9, 15, 14, 50, 3, 202000, timezone(timedelta(hours=9))),
+                DateTimeWithNS.parse("2019/09/15 14:50:03.101 +0900"),
+                DateTimeWithNS.parse("2019/09/15 14:50:03.202 +0900"),
             ],
-            [101000000, 202000000],
-            datetime(2019, 9, 15, 14, 50, 3, 42042, timezone(timedelta(hours=9))),
-            42042043,
+            DateTimeWithNS.parse("2019/09/15 14:50:03.042042043 +0900"),
             "Hello String"
         )]
     )
@@ -263,15 +258,15 @@ def test_return_None_if_invalid_datetime_format_string_in_array():
     }
     """
     expected = (
-        ("datetime", "datetime_ns"),
-        ("Array(DateTime)", "Array(UInt32)"),
+        ("datetime", ),
+        ("Array(DateTime64(9))", ),
         [(
             [
-                datetime(2019, 9, 15, 14, 50, 3, 0, timezone(timedelta(hours=0))),
+
+                DateTimeWithNS.parse("2019/09/15 14:50:03"),
                 None,
-                datetime(2019, 9, 15, 14, 50, 4, 0, timezone(timedelta(hours=0)))
+                DateTimeWithNS.parse("2019/09/15 14:50:04")
             ],
-            [0, None, 0],
         )]
     )
     res = clickhouse.data_string2type_value(src)
@@ -449,11 +444,11 @@ def test_return_values_with_date_time_valuel():
         "v_ns": "string"  # This specification will be ignored.
     }
     expected = (
-        ("v", "v_ns"),
-        ("DateTime", "UInt32", ),
-        [(None, None), (None, None), (None, None), (None, None), (None, None),
-         (datetime(2020, 8, 9, 11, 46, 0, 0, timezone(timedelta(hours=0))), 0),
-         (None, None), (None, None), (None, None), (None, None)]
+        ("v", ),
+        ("DateTime64(9)", ),
+        [(None, ), (None, ), (None, ), (None, ), (None, ),
+         (DateTimeWithNS.parse("2020-08-09 11:46:00"), ),
+         (None, ), (None, ), (None, ), (None, )]
     )
     res = clickhouse.data_string2type_value(src, specified_types=specified_types)
     assert expected == res
@@ -576,15 +571,14 @@ def test_return_array_values_with_array_datetime_valuel():
         "v": "array(datetime)",
     }
     expected = (
-        ("v", "v_ns"),
-        ("Array(DateTime)", "Array(UInt32)"),
+        ("v", ),
+        ("Array(DateTime64(9))", ),
         [
-            ([], []), ([], []), ([], []), ([], []),
-            ([], []), ([], []), ([], []),
-            ([], []),
-            ([None], [None]), ([None], [None]), ([None], [None]),
-            ([None], [None]), ([None], [None]), ([None], [None]),
-            ([datetime(2020, 8, 9, 11, 46, 0, 0, timezone(timedelta(hours=0)))], [0])
+            ([], ), ([], ), ([], ), ([], ),
+            ([], ), ([], ), ([], ), ([], ),
+            ([None], ), ([None], ), ([None], ),
+            ([None], ), ([None], ), ([None], ),
+            ([DateTimeWithNS.parse("2020-08-09 11:46:00")], )
         ]
     )
     res = clickhouse.data_string2type_value(src, specified_types=specified_types)
@@ -651,7 +645,7 @@ def test_return_multi_empty_set():
     {}
     {}
     """
-    expected = ((), (), [(),(),()])
+    expected = ((), (), [(), (), ()])
     res = clickhouse.data_string2type_value(src)
     assert res == expected
 
@@ -683,11 +677,11 @@ def test_return_types_with_inoreing_null_value():
     """
 
     expected = (
-        ("f", "b", "d", "d_ns", "s"),
-        ("Float64", "UInt8", "DateTime", "UInt32", "String"),
+        ("f", "b", "d", "s"),
+        ("Float64", "UInt8", "DateTime64(9)", "String"),
         [
-            (42, 1, datetime(2019, 9, 15, 14, 50, 3, 101000, timezone(timedelta(hours=9))), 101000000, "Hello,World"),
-            (None, None, None, None, None)
+            (42, 1, DateTimeWithNS.parse("2019/09/15 14:50:03.101 +0900"), "Hello,World"),
+            (None, None, None, None)
         ]
     )
     res = clickhouse.data_string2type_value(src)
@@ -739,11 +733,11 @@ def test_return_types_csv_with_none_value():
     """
 
     expected = (
-        ("a", "b", "c", "c_ns"),
-        ("Float64", "UInt8", "DateTime", "UInt32"),
+        ("a", "b", "c"),
+        ("Float64", "UInt8", "DateTime64(9)"),
         [
-            (42, None, None, None),
-            (None, 1, datetime(2019, 9, 15, 14, 50, 3, 101000, timezone(timedelta(hours=9))), 101000000)
+            (42, None, None),
+            (None, 1, DateTimeWithNS.parse("2019/9/15 14:50:03.101 +0900"))
         ]
     )
     res = clickhouse.data_string2type_value(src)

@@ -96,8 +96,8 @@ def __data_value_specified(column, value, specified_type, depth=0) -> list:
             v = None
         return [(column, "UInt8", v)]
     if t == 'DATETIME':
-        (dt, ns) = convert_or_default(lambda: elastic_time_parse(str(value)).tupple(), (None, None))
-        return [(column, "DateTime", dt), (f"{column}_ns", "UInt32", ns)]
+        dt = convert_or_default(lambda: elastic_time_parse(str(value)), None)
+        return [(column, "DateTime64(9)", dt)]
     if t in ['STRING', 'STR']:
         if isinstance(value, (list, dict, bool)):
             value = convert_or_default(lambda: json.dumps(value), None)
