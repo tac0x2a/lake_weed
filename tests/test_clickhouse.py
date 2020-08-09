@@ -158,6 +158,33 @@ def test_return_string_Array_if_empyt_array():
     assert expected == res
 
 
+def test_return_NULL_Array_if_nulle_array():
+    src = """
+    { "null_array" : [null, 42, null]}
+    """
+
+    expected = (
+        ("null_array", ),
+        ("Array(String)", ),
+        [([None, '42', None], )]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res
+
+
+def test_return_NULL_Array_if_behind_nulle_array():
+    src = """
+    { "null_array" : [42, null, null]}
+    """
+
+    expected = (
+        ("null_array", ),
+        ("Array(Float64)", ),
+        [([42, None, None], )]
+    )
+    res = clickhouse.data_string2type_value(src)
+    assert expected == res
+
 def test_return_string_Array_if_nested_array():
     src = """
     { "nested" : [[[],[1,2,3]]]}
@@ -208,6 +235,7 @@ def test_return_values_as_string_for_clickhouse_query():
     """
     expected = (
         ("array", "hello", "world__value", "hoge", "dates", "dates_ns", "date", "date_ns", "str"),
+        ("Array(Float64)", "Array(String)", "Array(String)", "Array(String)", "Array(DateTime)", "Array(UInt32)", "DateTime", "UInt32", "String"),
         [(
             [1, 2, 3],
             ['[1.1, 2.2]', '[3.3, 4.4]'],
@@ -225,7 +253,7 @@ def test_return_values_as_string_for_clickhouse_query():
     )
 
     res = clickhouse.data_string2type_value(src)
-    assert expected == (res[0], res[2])
+    assert expected == res
 
 
 def test_return_None_if_invalid_datetime_format_string_in_array():
@@ -268,6 +296,7 @@ def test_return_values_with_specivied_types():
     res = clickhouse.data_string2type_value(src, specified_types=specified_types)
     assert expected == res
 
+
 def test_return_values_with_specified_types_null():
     src = """
     {
@@ -286,6 +315,277 @@ def test_return_values_with_specified_types_null():
         ("i", "d", "n"),
         ("Int64", "Float64", "Float64"),
         [(42, 42, None)]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+
+def test_return_values_empty_collection():
+    src = """
+    {"v": {}, "a": [], "av": [{}], "va": {"a": []} }
+    """
+    specified_types = {}
+    expected = (
+        ("v", "a", "av", "va__a"),
+        ("String", "Array(String)", "Array(String)", "Array(String)"),
+        [
+            ("{}", [], ['{}'], [])
+        ]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+
+def test_return_values_without_specified_paramsl():
+    src = """
+    {"v": "42"}
+    {"v":  42}
+    {"v": true}
+    {"v": null}
+    {"v": "hoge42hoge"}
+    {"v": "2020-08-09 11:46:00"}
+    {"v": {}}
+    {"v": []}
+    {"v": [{}]}
+    {"v": [42]}
+    """
+    specified_types = {}
+    expected = (
+        ("v", ),
+        ("String", ),
+        [
+            ("42", ), ("42", ), ("true", ), (None, ), ("hoge42hoge", ),
+            ("2020-08-09 11:46:00", ), ("{}", ), ("[]", ), ("[{}]", ), ("[42]", )
+        ]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+
+def test_return_values_with_float_valuel():
+    src = """
+    {"v": "42"}
+    {"v":  42}
+    {"v": true}
+    {"v": null}
+    {"v": "hoge42hoge"}
+    {"v": "2020-08-09 11:46:00"}
+    {"v": {}}
+    {"v": [{}]}
+    {"v": [42]}
+    """
+    specified_types = {"v": "float"}
+    expected = (
+        ("v", ),
+        ("Float64", ),
+        [(42.0,), (42.0,), (1.0,), (None,), (None,), (None,), (None,), (None,), (None,)]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+def test_return_values_with_int_valuel():
+    src = """
+    {"v": "42"}
+    {"v":  42}
+    {"v": true}
+    {"v": null}
+    {"v": "hoge42hoge"}
+    {"v": "2020-08-09 11:46:00"}
+    {"v": {}}
+    {"v": [{}]}
+    {"v": [42]}
+    """
+    specified_types = {
+        "v": "int"
+    }
+    expected = (
+        ("v", ),
+        ("Int64", ),
+        [(42,), (42,), (1,), (None,), (None,), (None,), (None,), (None,), (None,)]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+def test_return_values_with_bool_valuel():
+    src = """
+    {"v": "42"}
+    {"v":  42}
+    {"v": true}
+    {"v": null}
+    {"v": "hoge42hoge"}
+    {"v": "2020-08-09 11:46:00"}
+    {"v": {}}
+    {"v": []}
+    {"v": [{}]}
+    {"v": [42]}
+    """
+    specified_types = {
+        "v": "bool"
+    }
+    expected = (
+        ("v", ),
+        ("UInt8", ),
+        [(1,), (1,), (1,), (None,), (1,), (1,), (0,), (0,), (1,), (1,)]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+
+def test_return_values_with_date_time_valuel():
+    src = """
+    {"v": "42"}
+    {"v":  42}
+    {"v": true}
+    {"v": null}
+    {"v": "hoge42hoge"}
+    {"v": "2020-08-09 11:46:00"}
+    {"v": {}}
+    {"v": []}
+    {"v": [{}]}
+    {"v": [42]}
+    """
+    specified_types = {
+        "v": "datetime",
+        "v_ns": "string"  # This specification will be ignored.
+    }
+    expected = (
+        ("v", "v_ns"),
+        ("DateTime", "UInt32", ),
+        [(None, None), (None, None), (None, None), (None, None), (None, None),
+         (datetime(2020, 8, 9, 11, 46, 0, 0, timezone(timedelta(hours=0))), 0),
+         (None, None), (None, None), (None, None), (None, None)]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+
+def test_return_values_with_string_valuel():
+    src = """
+    {"v": "42"}
+    {"v":  42}
+    {"v": true}
+    {"v": null}
+    {"v": "hoge42hoge"}
+    {"v": "2020-08-09 11:46:00"}
+    {"v": {}}
+    {"v": []}
+    {"v": [{}]}
+    {"v": [42]}
+    """
+    specified_types = {
+        "v": "string",
+    }
+    expected = (
+        ("v", ),
+        ("String", ),
+        [
+            ("42", ), ("42", ), ("true", ), (None, ), ("hoge42hoge", ),
+            ("2020-08-09 11:46:00", ), ("{}", ), ("[]", ), ("[{}]", ), ("[42]", )
+        ]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+
+def test_return_array_values_with_string_valuel():
+    src = """
+    {"v": "42"}
+    {"v": 42}
+    {"v": true}
+    {"v": null}
+    {"v": "hoge42hoge"}
+    {"v": "2020-08-09 11:46:00"}
+    {"v": {}}
+    {"v": []}
+    {"v": [{}]}
+    {"v": ["42"]}
+    {"v": [42]}
+    {"v": [true]}
+    {"v": [null]}
+    {"v": ["hoge42hoge"]}
+    {"v": ["2020-08-09 11:46:00"]}
+    """
+    specified_types = {
+        "v": "string",
+    }
+    expected = (
+        ("v", ),
+        ("String", ),
+        [
+            ("42", ), ("42", ), ("true", ), (None, ), ("hoge42hoge", ),
+            ("2020-08-09 11:46:00", ), ("{}", ), ("[]", ), ("[{}]", ),
+            ('["42"]', ), ('[42]', ), ('[true]', ), ('[null]', ), ('["hoge42hoge"]',), ('["2020-08-09 11:46:00"]', )
+        ]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+
+def test_return_array_values_with_array_string_valuel():
+    src = """
+    {"v": "42"}
+    {"v": 42}
+    {"v": true}
+    {"v": null}
+    {"v": "hoge42hoge"}
+    {"v": "2020-08-09 11:46:00"}
+    {"v": {}}
+    {"v": []}
+    {"v": [{}]}
+    {"v": ["42"]}
+    {"v": [42]}
+    {"v": [true]}
+    {"v": [null]}
+    {"v": ["hoge42hoge"]}
+    {"v": ["2020-08-09 11:46:00"]}
+    """
+    specified_types = {
+        "v": "array(string)",
+    }
+    expected = (
+        ("v", ),
+        ("Array(String)", ),
+        [
+            ([], ), ([], ), ([], ), ([], ), ([], ),
+            ([], ), ([], ), ([], ), (["{}"], ),
+            (["42"], ), (["42"], ), (["true"], ), ([None], ), (["hoge42hoge"],), (["2020-08-09 11:46:00"], )
+        ]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+def test_return_array_values_with_array_datetime_valuel():
+    src = """
+    {"v": "42"}
+    {"v": 42}
+    {"v": true}
+    {"v": null}
+    {"v": "hoge42hoge"}
+    {"v": "2020-08-09 11:46:00"}
+    {"v": {}}
+    {"v": []}
+    {"v": [{}]}
+    {"v": ["42"]}
+    {"v": [42]}
+    {"v": [true]}
+    {"v": [null]}
+    {"v": ["hoge42hoge"]}
+    {"v": ["2020-08-09 11:46:00"]}
+    """
+    specified_types = {
+        "v": "array(datetime)",
+    }
+    expected = (
+        ("v", "v_ns"),
+        ("Array(DateTime)", "Array(UInt32)"),
+        [
+            ([], []), ([], []), ([], []), ([], []),
+            ([], []), ([], []), ([], []),
+            ([], []),
+            ([None], [None]), ([None], [None]), ([None], [None]),
+            ([None], [None]), ([None], [None]), ([None], [None]),
+            ([datetime(2020, 8, 9, 11, 46, 0, 0, timezone(timedelta(hours=0)))], [0])
+        ]
     )
     res = clickhouse.data_string2type_value(src, specified_types=specified_types)
     assert expected == res
@@ -404,8 +704,7 @@ def test_return_types_with_optimal_value():
         ("f", "b", "d"),
         ("String", "String", "String"),
         [
-             # it can't keep 'true', because it will be converted to True in json.loads...
-            ("42", "True", "2019/09/15 14:50:03.101 +0900"),
+            ("42", "true", "2019/09/15 14:50:03.101 +0900"),
             ("42", "true", "2019/13/15 14:50:03.101 +0900"),
         ]
     )

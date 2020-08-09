@@ -56,6 +56,9 @@ def data_string2type_value(src_str: str, specified_types={}, logger=logging.getL
         inner_type = get_array_inner_type(t)
         if inner_type == 'Empty':
             column_types[c] = 'Array(String)'
+        if inner_type == 'None':
+            column_types[c] = 'Array(String)'
+
 
     # 5. [Depends on DBMS] Converting values according to the type and add columns if necessary
     ch_values_list = []
@@ -96,41 +99,39 @@ def __data_value_specified(column, value, specified_type, depth=0) -> list:
         (dt, ns) = convert_or_default(lambda: elastic_time_parse(str(value)).tupple(), (None, None))
         return [(column, "DateTime", dt), (f"{column}_ns", "UInt32", ns)]
     if t in ['STRING', 'STR']:
+        if isinstance(value, (list, dict, bool)):
+            value = convert_or_default(lambda: json.dumps(value), None)
         v = convert_or_default(lambda: None if value is None else str(value), None)
         return [(column, "String", v)]
     # Todo need verify spec file method.
     logging.warning(f"Specified type '{str(specified_type)}' is not supported.")
+    return [(column, None, value)]
 
 
-def __list_data_value_specified(column, list_value, specified_type, depth) -> list:
-    # return [(column, "Array(Type)", value), ]
+def __list_data_value_specified(column, list_value, specified_type, depth) -> list:  # [(column, "Array(Type)", value), ]
 
     if depth > 0:
         json_str = convert_or_default(lambda: json.dumps(list_value), None)
         return [(column, f"String", json_str)]
 
     inner_type = get_array_inner_type(specified_type)
-    # if inner_type is None:
-    #     logging.warning(f"Missing inner type in '{specified_type}'")
-    #     raise ValueError
 
     values = []
-    dummy, values_type, dummy = __data_value_specified("dummy", None, inner_type, depth + 1)[0]
+    ctv_list = __data_value_specified("dummy", None, inner_type, depth + 1)
+    dummy, values_type, dummy = ctv_list[0]
+
+    if list_value is None or not isinstance(list_value, (list)):
+        res = [(column, f"Array({values_type})", [])]
+        if values_type == "DateTime":
+            (col, typ, val) = ctv_list[1]
+            res.append((f"{column}_ns", f"Array({typ})", []))
+        return res
 
     values_ns = []
     values_ns_type = None
 
-    list_value = [] if list_value is None else list_value
-    for idx, v in enumerate(list_value):
-
-        # If value is dict, store dict as json.
-        if isinstance(v, (list, dict)):
-            json_str = convert_or_default(lambda: json.dumps(v), None)
-            values.append(json_str)
-            values_type = "String"
-            continue
-
-        ctv_list = __data_value_specified("dummy", v, inner_type)
+    for v in list_value:
+        ctv_list = __data_value_specified("dummy", v, inner_type, depth + 1)
         (col, typ, val) = ctv_list[0]
         values.append(val)
         values_type = typ
@@ -142,7 +143,7 @@ def __list_data_value_specified(column, list_value, specified_type, depth) -> li
             values_ns_type = typ
 
     res = [(column, f"Array({values_type})", values)]
-    if len(values_ns) > 1:
+    if values_type == "DateTime" or len(values_ns) > 1:
         res.append((f"{column}_ns", f"Array({values_ns_type})", values_ns))
 
     return res

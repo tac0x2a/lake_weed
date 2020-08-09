@@ -67,6 +67,25 @@ def test_inference_format_reteurn_list_of_json_obj_src_is_multi_line_json_object
     assert expected_keys == keys
     assert expected_values == values_list
 
+def test_inference_format_reteurn_empty_collection_as_None():
+    src = """
+    { "a" : {}}
+    { "a" : []}
+    { "a" : [{}]}
+    """
+
+    expected_keys = ['a']
+    expected_values = [
+        [{}],
+        [[]],
+        [[{}]]
+    ]
+
+    (format, keys, values_list) = ip.inferencial_parse(src)
+    assert ip.JsonLines == format
+    assert expected_keys == keys
+    assert expected_values == values_list
+
 
 # -------------- CSV -------------- #
 def test_inference_format_reteurn_csv_src_is_basic_csv():
