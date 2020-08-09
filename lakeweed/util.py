@@ -53,6 +53,7 @@ def __data_type_list(value_as_list):
     return f"Array({inner_type})"
 
 
+# -----------------------------------------------------------------
 __TypeMap = {
     # sorted(["empty", "float", "bool", "datetime", "array(string)", "string"])
     # ['array(string)', 'bool', 'datetime', 'empty', 'float', 'string']
@@ -109,6 +110,7 @@ def __upcast_data_type(type1, type2) -> str:
     return __TypeMap.get(from_to, "String")
 
 
+# -----------------------------------------------------------------
 __AliasTypes = {
     'FLOAT': "Float",
     'DOUBLE': "Float",
@@ -122,6 +124,11 @@ __AliasTypes = {
 }
 
 
+def specified_type2lakeweed_type(specified_type):
+    return __AliasTypes.get(specified_type.upper(), specified_type)
+
+
+# -----------------------------------------------------------------
 def get_array_inner_type(array_type: str) -> str:
     import re
     pattern = re.compile(r"Array\((.+)\)", re.IGNORECASE)
@@ -131,40 +138,3 @@ def get_array_inner_type(array_type: str) -> str:
         return None
 
     return inner_type_m.group(1)
-
-
-def specified_type2lakeweed_type(specified_type):
-    return __AliasTypes.get(specified_type.upper(), specified_type)
-
-
-def __datetime_parse(value):
-    # list
-    if type(value) is list:
-        return __traverse_datetime_parse_list(value)
-
-    # scala
-    if type(value) is str:
-        try:
-            return time_parser.elastic_time_parse(value)
-        except ValueError:
-            return value
-
-    return value
-
-
-def __traverse_datetime_parse_list(list: list):
-    try:
-        return [time_parser.elastic_time_parse(v) for v in list]
-    except (ValueError, TypeError):
-        return list
-
-
-def __cast_specified(original, specified: str):
-    s = specified.upper()
-    if s in ["STR", "STRING"]:
-        return str(original)
-    if s in ["INT", "INTEGER"]:
-        return int(original)
-    if s in ["FLOAT", "DOUBLE", "DECIMAL", "DEC"]:
-        return float(original)
-    raise TypeError(f"Not supported specified type: {specified}")
