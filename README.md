@@ -49,9 +49,7 @@ print(columns)
 #   'nested_map__value',
 #   'map_in_array',
 #   'dates',
-#   'dates_ns',
 #   'date__as_datetime',
-#   'date__as_datetime_ns',
 #   'date__as_string',
 #   'str'
 # )
@@ -62,17 +60,15 @@ print(types)
 #   'Array(String)',
 #   'Array(String)',
 #   'Array(String)',
-#   'Array(DateTime)',
-#   'Array(UInt32)',
-#   'DateTime',
-#   'UInt32',
+#   'Array(DateTime64(6))',
+#   'DateTime64(6)',
 #   'String',
 #   'String'
 # )
 
 print(values)
 # [(
-#   [1, 2, 3],
+#   [1.0, 2.0, 3.0],
 #   ['[1.1, 2.2]', '[3.3, 4.4]'],
 #   ['[1, 2]', '[3, 4]'],
 #   ['{"v": 1}', '{"v": 2}'],
@@ -80,13 +76,10 @@ print(values)
 #     datetime.datetime(2019, 9, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)),
 #     datetime.datetime(2019, 9, 15, 14, 50, 3, 202000, tzinfo=tzoffset(None, 32400))
 #   ],
-#   [101000000, 202000000],
 #   datetime.datetime(2019, 9, 15, 14, 50, 3, 42042, tzinfo=tzoffset(None, 32400)),
-#   42042043,
 #   '2019/09/15 14:50:03.042042043 +0900',
 #   'Hello, LakeWeed'
 # )]
-
 ```
 
 ## Example(CSV test to ClickHouse)
@@ -104,12 +97,12 @@ print(columns)
 # ('f', 'b', 'd', 'd_ns')
 
 print(types)
-# ('Float64', 'UInt8', 'DateTime', 'UInt32')
+# ('Float64', 'UInt8', 'DateTime64(6)')
 
 print(values)
 # [
-#   (42, 1, datetime.datetime(2019, 9, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)), 101000000),
-#   (42, 1, datetime.datetime(2019, 12, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)), 101000000)
+#   (42.0, 1, datetime.datetime(2019, 9, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400))),
+#   (42.0, 1, datetime.datetime(2019, 12, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)))
 # ]
 ```
 
@@ -131,12 +124,14 @@ print(columns)
 # ('f', 'b', 'd', 'd_ns')
 
 print(types)
+# ('String', 'String', 'DateTime64(6)')
+
 # ('String', 'String', 'DateTime', 'UInt32')
 
 print(values)
 # [
-#   ('42', '1',    datetime.datetime(2019,  9, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)), 101000000),
-#   ('42', 'true', datetime.datetime(2019, 12, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)), 101000000)
+#   ('42', 'true', datetime.datetime(2019, 9, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400))),
+#   ('42', 'true', datetime.datetime(2019, 12, 15, 14, 50, 3, 101000, tzinfo=tzoffset(None, 32400)))
 # ]
 ```
 
@@ -148,17 +143,12 @@ print(values)
 + `Int`, `Integer` : `Int64`
 + `Bool`, `Boolean` : `UInt8` (True: 1, False: 0)
 + `String`, `Str` : `String`
-+ `DateTime` : It will be split to 2 columns.
-  + `DateTime`: Without milli seconds
-  + `UInt32`: Nano seconds
++ `DateTime` : `DateTime64(6)` Nano seconds order is ignored.
 + `Array(Float)`, `Array(Double)` : `Array(Float64)`
 + `Array(Int)`, `Array(Integer)` : `Array(Int64)`
 + `Array(Bool)`, `Array(Boolean)` : `Array(UInt8)`
 + `Array(String)`,`Array(Str)`  : `Array(String)`
-+ `Array(DateTime)` : It will be split to 2 columns.
-  + `Array(DateTime)`: Without milli seconds
-  + `Array(UInt32)`: Nano Seconds
-
++ `Array(DateTime)` : `Array(DateTime64(6))`
 
 # Release PyPI
 
