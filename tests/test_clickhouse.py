@@ -261,9 +261,9 @@ def test_return_values_with_specivied_types():
     }
 
     expected = (
-        tuple(["datetime"]),
-        tuple(["String"]),
-        [tuple(["2019/09/15 14:50:03.042042043 +0900"])]
+        ("datetime", ),
+        ("String", ),
+        [("2019/09/15 14:50:03.042042043 +0900",)]
     )
     res = clickhouse.data_string2type_value(src, specified_types=specified_types)
     assert expected == res
@@ -283,9 +283,9 @@ def test_return_values_with_specified_types_null():
     }
 
     expected = (
-        tuple(["i", "d", "n"]),
-        tuple(["Int64", "Float64", "Float64"]),
-        [tuple([42, 42, None])]
+        ("i", "d", "n"),
+        ("Int64", "Float64", "Float64"),
+        [(42, 42, None)]
     )
     res = clickhouse.data_string2type_value(src, specified_types=specified_types)
     assert expected == res
@@ -304,9 +304,9 @@ def test_return_values_with_specivied_nested_types():
     }
 
     expected = (
-        tuple(["datetime__nested"]),
-        tuple(["String"]),
-        [tuple(["2019/09/15 14:50:03.042042043 +0900"])]
+        ("datetime__nested", ),
+        ("String", ),
+        [("2019/09/15 14:50:03.042042043 +0900", )]
     )
 
     res = clickhouse.data_string2type_value(src, specified_types=specified_types)
@@ -319,9 +319,9 @@ def test_return_String_type_if_provide_None_type():
     """
 
     expected = (
-        tuple(["value"]),
-        tuple(["String"]),
-        [tuple([None])]
+        ("value", ),
+        ("String", ),
+        [(None, )]
     )
     res = clickhouse.data_string2type_value(src)
     assert expected == res
