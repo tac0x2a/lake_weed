@@ -80,6 +80,44 @@ def test_return_DateTime64_type_if_DateTime_like_string_provided_csv():
     assert expected == res
 
 
+def test_return_DateTime64_type_with_specified_timezone():
+    src = """
+    { "use_offset" : "2019/08/15 01:39+09:00", "use_specified_without_offset" : "2019/08/15 01:39", "invalid" : "2019/08/15 01:60"}
+    """
+    expected = (
+        ("use_offset", "use_specified_without_offset", "invalid"),
+        ("DateTime64(6)", "DateTime64(6)", "String"),
+        [
+            (
+                datetime(2019, 8, 15, 1, 39, 0, 0 * 1000, timezone(timedelta(hours=9))),
+                datetime(2019, 8, 15, 1, 39, 0, 0 * 1000, timezone(timedelta(hours=-6))),
+                "2019/08/15 01:60"
+            )
+        ]
+    )
+    res = clickhouse.data_string2type_value(src, tz_str="Canada/Mountain")
+    assert expected == res
+
+
+def test_return_DateTime64_list_with_specified_timezone():
+    src = """
+    { "use_offset" : ["2019/08/15 01:39+09:00"], "use_specified_without_offset" : ["2019/08/15 01:39"], "invalid" : ["2019/08/15 01:60"]}
+    """
+    expected = (
+        ("use_offset", "use_specified_without_offset", "invalid"),
+        ("Array(DateTime64(6))", "Array(DateTime64(6))", "Array(String)"),
+        [
+            (
+                [datetime(2019, 8, 15, 1, 39, 0, 0 * 1000, timezone(timedelta(hours=9)))],
+                [datetime(2019, 8, 15, 1, 39, 0, 0 * 1000, timezone(timedelta(hours=-6)))],
+                ["2019/08/15 01:60"]
+            )
+        ]
+    )
+    res = clickhouse.data_string2type_value(src, tz_str="Canada/Mountain")
+    assert expected == res
+
+
 def test_return_nested_values_splited_by__():
     src = """
     { "hello" : 42, "world" : { "value" : 128.4, "bool" : true, "deep" : {"str" : "Hello,World" } } }

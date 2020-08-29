@@ -23,8 +23,8 @@ class DateTimeWithNS:
         return self.original_string
 
     @classmethod
-    def parse(cls, datetime_like_string: str):
-        return elastic_time_parse(datetime_like_string)
+    def parse(cls, datetime_like_string: str, tz_str=None):
+        return elastic_time_parse(datetime_like_string, tz_str=tz_str)
 
 
 def elastic_time_parse(src, tz_str=None, logger=None) -> DateTimeWithNS:
