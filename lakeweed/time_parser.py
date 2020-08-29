@@ -1,10 +1,10 @@
-from dataclasses import dataclass
-
 import datetime
-from dateutil.parser import parse
-from dateutil.tz import tzutc
-
 import re
+from dataclasses import dataclass
+from datetime import timezone
+
+import pytz
+from dateutil.parser import parse
 
 NanosecPattern = re.compile(r".+\.(\d+).*")
 RequiredTimePattern = re.compile(r".*\d\d?[/:-]\d\d?.*")
@@ -23,11 +23,11 @@ class DateTimeWithNS:
         return self.original_string
 
     @classmethod
-    def parse(cls, datetime_like_string: str):
-        return elastic_time_parse(datetime_like_string)
+    def parse(cls, datetime_like_string: str, tz_str=None):
+        return elastic_time_parse(datetime_like_string, tz_str=tz_str)
 
 
-def elastic_time_parse(src, logger=None) -> DateTimeWithNS:
+def elastic_time_parse(src, tz_str=None, logger=None) -> DateTimeWithNS:
     """Parse src string as datetime and nanosec part. Raise exception if src format is NOT valid. """
     if src is None:
         raise ValueError
@@ -38,7 +38,12 @@ def elastic_time_parse(src, logger=None) -> DateTimeWithNS:
     nano = 0
     ret = parse(src)
     if ret.tzinfo is None:
-        ret = ret.replace(tzinfo=tzutc())
+        try:
+            tz_info = pytz.timezone(tz_str)
+            offset = timezone(tz_info.utcoffset(ret))
+            ret = ret.replace(tzinfo=offset)
+        except Exception:
+            ret = ret.replace(tzinfo=timezone.utc)
 
     m = NanosecPattern.match(src)
     if(m is not None):

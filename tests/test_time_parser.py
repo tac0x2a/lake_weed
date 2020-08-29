@@ -5,19 +5,17 @@ from lakeweed.time_parser import DateTimeWithNS
 from datetime import datetime, timezone, timedelta
 
 
-def assertConverted(src, expected_time, expected_ns):
-    res = time_parser.elastic_time_parse(src)
-    assert DateTimeWithNS(expected_time, expected_ns, src) == res
+def assertConverted(src, expected_time, expected_ns, tz_str=None):
+    expected = DateTimeWithNS(expected_time, expected_ns, src)
+    actual = time_parser.elastic_time_parse(src, tz_str=tz_str)
+    assert expected.datetime == actual.datetime
+    assert expected.nanosec == actual.nanosec
+    assert expected.original_string == actual.original_string
 
 
 def assertNotValid(src):
     with pytest.raises(ValueError):
         time_parser.elastic_time_parse(src)
-
-#   # ISO 8601: ex: "yyyy-mm-ddThh:MM:ss+OO:OO'"
-#               '2018-12-03T12:34:56.123+08:00',
-#               '2018-12-03T12:02:56Z',
-#               '2018-12-03T12:34.334:56Z'
 
 
 def test_return_time_value_if_string_is_ISO_8601_format():
@@ -101,6 +99,41 @@ def test_return_Time_value_if_string_is_Time_like_format_with_hour_min_by_hyphen
 def test_return_Time_value_if_string_is_Time_like_format_without_zero_padding():
     assertConverted("2018/11/14 9:6",
                     datetime(2018, 11, 14, 9, 6, 0, 0 * 1000, timezone(timedelta(hours=0))), 0
+                    )
+
+
+def test_return_Time_value_if_string_is_Time_like_format_with_tz_MDT():
+    assertConverted("2019/08/15 01:39",
+                    datetime(2019, 8, 15, 1, 39, 0, 0 * 1000, timezone(timedelta(hours=-6))), 0,
+                    tz_str="Canada/Mountain"
+                    )
+
+
+def test_return_Time_value_if_string_is_Time_like_format_with_tz_jst():
+    assertConverted("2019/08/15 01:39",
+                    datetime(2019, 8, 15, 1, 39, 0, 0 * 1000, timezone(timedelta(hours=9))), 0,
+                    tz_str="Asia/Tokyo"
+                    )
+
+
+def test_return_Time_value_if_string_is_Time_like_format_with_invalid_tz():
+    assertConverted("2019/08/15 01:39",
+                    datetime(2019, 8, 15, 1, 39, 0, 0 * 1000, timezone(timedelta(hours=0))), 0,
+                    tz_str="Asia/NewTokyo"
+                    )
+
+
+def test_return_Time_value_if_string_is_Time_like_format_with_None_tz():
+    assertConverted("2019/08/15 01:39",
+                    datetime(2019, 8, 15, 1, 39, 0, 0 * 1000, timezone(timedelta(hours=0))), 0,
+                    tz_str=None
+                    )
+
+
+def test_return_Time_value_if_string_is_Time_like_format_with_empty_str_tz():
+    assertConverted("2019/08/15 01:39",
+                    datetime(2019, 8, 15, 1, 39, 0, 0 * 1000, timezone(timedelta(hours=0))), 0,
+                    tz_str=''
                     )
 
 

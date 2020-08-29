@@ -7,7 +7,7 @@ from .inferencial_parser import inferencial_parse
 from .util import data_types, upcast_data_types, specified_type2lakeweed_type, get_array_inner_type
 
 
-def data_string2type_value(src_str: str, specified_types={}, logger=logging.getLogger("lakeweed__clickhouse")) -> (tuple, tuple, list):
+def data_string2type_value(src_str: str, specified_types={}, tz_str=None, logger=logging.getLogger("lakeweed__clickhouse")) -> (tuple, tuple, list):
     """
     Convert string to python dict with data types for Clickhouse
 
@@ -16,6 +16,7 @@ def data_string2type_value(src_str: str, specified_types={}, logger=logging.getL
 
     Keyword Arguments:
         logger -- logger object (default: {logging.getLogger("lakeweed__clickhouse")})
+        tz_str -- timezone string on tz database. https://www.wikiwand.com/en/List_of_tz_database_time_zones If it's not provided use UTC(no offset).
 
     Returns:
         tuple -- return tuple (columns, types, values_list).
@@ -66,7 +67,7 @@ def data_string2type_value(src_str: str, specified_types={}, logger=logging.getL
     for values in src_values_list:
         ch_values = []
         for c, t, v in zip(column_types.keys(), column_types.values(), values):
-            ch_c, ch_t, ch_v = __data_value_specified(c, v, t)
+            ch_c, ch_t, ch_v = __data_value_specified(c, v, t, tz_str)
             ch_column_types[ch_c] = ch_t
             ch_values.append(ch_v)
         ch_values_list.append(tuple(ch_values))
@@ -77,11 +78,11 @@ def data_string2type_value(src_str: str, specified_types={}, logger=logging.getL
     return (columns_res, types_res, ch_values_list)
 
 
-def __data_value_specified(column, value, specified_type, depth=0) -> tuple:
+def __data_value_specified(column, value, specified_type, tz_str, depth=0) -> tuple:
     t = str(specified_type).upper()
 
     if t.startswith("ARRAY"):
-        return __list_data_value_specified(column, value, specified_type, depth)
+        return __list_data_value_specified(column, value, specified_type, tz_str, depth)
 
     if t in ["FLOAT"]:
         v = convert_or_default(lambda: float(value), None)
@@ -95,7 +96,7 @@ def __data_value_specified(column, value, specified_type, depth=0) -> tuple:
             v = None
         return (column, "UInt8", v)
     if t == 'DATETIME':
-        dt, ns = convert_or_default(lambda: elastic_time_parse(str(value)).tupple(), (None, None))
+        dt, ns = convert_or_default(lambda: elastic_time_parse(str(value), tz_str=tz_str).tupple(), (None, None))
 
         return (column, "DateTime64(6)", dt)
     if t in ['STRING', 'STR']:
@@ -108,7 +109,7 @@ def __data_value_specified(column, value, specified_type, depth=0) -> tuple:
     return (column, None, value)
 
 
-def __list_data_value_specified(column, list_value, specified_type, depth) -> list:  # [(column, "Array(Type)", value), ]
+def __list_data_value_specified(column, list_value, specified_type, tz_str, depth) -> list:  # [(column, "Array(Type)", value), ]
 
     if depth > 0:
         json_str = convert_or_default(lambda: json.dumps(list_value), None)
@@ -117,13 +118,13 @@ def __list_data_value_specified(column, list_value, specified_type, depth) -> li
     inner_type = get_array_inner_type(specified_type)
 
     values = []
-    dummy, values_type, dummy = __data_value_specified("dummy", None, inner_type, depth + 1)
+    dummy, values_type, dummy = __data_value_specified("dummy", None, inner_type, tz_str, depth + 1)
 
     if list_value is None or not isinstance(list_value, (list)):
         return (column, f"Array({values_type})", [])
 
     for v in list_value:
-        col, typ, val = __data_value_specified("dummy", v, inner_type, depth + 1)
+        col, typ, val = __data_value_specified("dummy", v, inner_type, tz_str, depth + 1)
         values.append(val)
         values_type = typ
 
