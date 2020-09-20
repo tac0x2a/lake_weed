@@ -352,6 +352,23 @@ def test_return_values_with_specified_types_null():
     assert expected == res
 
 
+def test_return_values_with_specified_types_if_property_not_found():
+    src = """
+    {"i"  : 42}
+    {"j"  : 42}
+    """
+    specified_types = {
+        "missing_column": "DateTime"
+    }
+    expected = (
+        ("i", "j", "missing_column"),
+        ("Float64", "Float64", "DateTime64(6)"),
+        [(42, None, None), (None, 42, None)]
+    )
+    res = clickhouse.data_string2type_value(src, specified_types=specified_types)
+    assert expected == res
+
+
 def test_return_values_empty_collection():
     src = """
     {"v": {}, "a": [], "av": [{}], "va": {"a": []} }
@@ -478,14 +495,14 @@ def test_return_values_with_date_time_valuel():
     """
     specified_types = {
         "v": "datetime",
-        "v_ns": "string"  # This specification will be ignored.
+        "v_ns": "string"
     }
     expected = (
-        ("v", ),
-        ("DateTime64(6)", ),
-        [(None, ), (None, ), (None, ), (None, ), (None, ),
-         (datetime(2020, 8, 9, 11, 46, 0, 0, timezone(timedelta(hours=0))), ),
-         (None, ), (None, ), (None, ), (None, )]
+        ("v", "v_ns"),
+        ("DateTime64(6)", "String"),
+        [(None, None), (None, None), (None, None), (None, None), (None, None),
+         (datetime(2020, 8, 9, 11, 46, 0, 0, timezone(timedelta(hours=0))), None),
+         (None, None), (None, None), (None, None), (None, None)]
     )
     res = clickhouse.data_string2type_value(src, specified_types=specified_types)
     assert expected == res
