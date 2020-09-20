@@ -310,7 +310,7 @@ def test_return_None_if_invalid_datetime_format_string_in_array():
     assert expected == res
 
 
-def test_return_values_with_specivied_types():
+def test_return_values_with_specified_types():
     src = """
     {
       "datetime"  : "2019/09/15 14:50:03.042042043 +0900"
@@ -622,7 +622,7 @@ def test_return_array_values_with_array_datetime_valuel():
     assert expected == res
 
 
-def test_return_values_with_specivied_nested_types():
+def test_return_values_with_specified_nested_types():
     src = """
     {
       "datetime"  : {
