@@ -7,7 +7,7 @@ def _requires_from_file(filename):
 
 setup(
     name="lakeweed",
-    version="1.2.0",
+    version="1.2.1",
     author="TAC",
     author_email="tac@tac42.net",
     description=("Elastic parser for data-like string, JSON, JSON Lines, and CSV to RDB record"),
