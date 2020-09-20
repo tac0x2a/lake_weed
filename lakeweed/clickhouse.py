@@ -49,6 +49,18 @@ def data_string2type_value(src_str: str, specified_types={}, tz_str=None, logger
             continue
         column_types[k] = specified_type2lakeweed_type(t)
 
+    # 3-2. Append missing specified columns with None value
+    missing_columns = specified_types.keys() - column_types.keys()
+    for missing_column in missing_columns:
+        print(missing_column)
+        specified_type = specified_types[missing_column]
+        print(specified_type)
+        column_types[missing_column] = specified_type
+
+        for values in src_values_list:
+            values.append(None)
+
+
     # 4. [Depends on DBMS] If the type could not be estimated, it should be a String because there is no information to estimate it
     for c, t in column_types.items():
         if t is None:
