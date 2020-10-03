@@ -52,9 +52,7 @@ def data_string2type_value(src_str: str, specified_types={}, tz_str=None, logger
     # 3-2. Append missing specified columns with None value
     missing_columns = specified_types.keys() - column_types.keys()
     for missing_column in missing_columns:
-        print(missing_column)
         specified_type = specified_types[missing_column]
-        print(specified_type)
         column_types[missing_column] = specified_type
 
         for values in src_values_list:
